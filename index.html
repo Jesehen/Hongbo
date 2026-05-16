@@ -1075,10 +1075,7 @@ function updateCount(){
 }
 
 function filterCol(id){st.colId=id;renderAll();}
-);
-  saveAccData();renderAll();
-  showToast('专栏「'+name.trim().slice(0,10)+'」已创建');
-}
+
 function mobFilterCol(id){st.colId=id;renderAll();}
 function doSearch(q){st.q=q;renderList();}
 function mobSearch(q){st.mobQ=q;renderMobList();}
@@ -1208,10 +1205,6 @@ function applySelSize(size){
     }catch{}
   }
   document.getElementById('size-sel').value='';
-}
-catch{}
-  }
-  document.getElementById('font-sel').value='';
 }
 </script>
 <script>
