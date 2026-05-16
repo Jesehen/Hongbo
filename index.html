@@ -227,15 +227,21 @@ aside{width:265px;flex-shrink:0;background:var(--surface);border-right:1px solid
 
 /* ===== MOBILE MEDIA QUERY ===== */
 @media (max-width:767px){
-  /* Header adjustments */
-  header{padding:0 .85rem;height:48px;}
+  /* Header: 适配刘海屏/动态岛安全区域 */
+  header{
+    padding-left:.85rem;padding-right:.85rem;
+    padding-top:env(safe-area-inset-top,0px);
+    height:calc(48px + env(safe-area-inset-top,0px));
+  }
   .hdr-btn.desk-only,.fs-ctrl.desk-only,.hdr-acc-name.desk-only{display:none !important;}
   .mob-menu-btn{display:flex;}
   .count-badge{display:none;}
 
-  /* Sidebar: slide-over drawer */
+  /* Sidebar: slide-over drawer，从header底部开始 */
   aside{
-    position:fixed;top:48px;left:0;bottom:0;
+    position:fixed;
+    top:calc(48px + env(safe-area-inset-top,0px));
+    left:0;bottom:0;
     width:82vw;max-width:300px;
     z-index:50;
     transform:translateX(-100%);
@@ -244,12 +250,12 @@ aside{width:265px;flex-shrink:0;background:var(--surface);border-right:1px solid
   }
   aside.mob-open{transform:translateX(0);}
 
-  /* Content: full width */
-  .content{position:absolute;inset:0;top:0;}
-  main{position:relative;overflow:hidden;}
+  /* Content: 正常流式布局，不绝对定位 */
+  main{display:flex;flex-direction:column;overflow:hidden;}
+  .content{flex:1;min-height:0;}
 
-  /* Panels: add bottom padding for nav bar */
-  .panel{padding:1.2rem 1rem 5.5rem;}
+  /* Panels: 底部留出导航栏+安全区域 */
+  .panel{padding:1.2rem 1rem calc(4.5rem + env(safe-area-inset-bottom,0px));}
 
   /* Mobile back bar visible */
   .mob-back-bar{display:flex;}
