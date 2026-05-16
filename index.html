@@ -9,8 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="宏博">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#16130e" id="theme-meta">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500&family=Noto+Sans+SC:wght@400;500&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+<!-- 使用系统字体，无需外部加载 -->
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -36,14 +35,14 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
 input,textarea,select{font-family:inherit;-webkit-appearance:none;}
 
 /* FONTS */
-.f-songti{font-family:'Noto Serif SC','宋体',Georgia,serif!important;}
-.f-heiti{font-family:'Noto Sans SC','微软雅黑','PingFang SC',sans-serif!important;}
-.f-kaiti{font-family:'楷体','KaiTi','华文楷体',serif!important;}
-.f-fangsong{font-family:'仿宋','FangSong','STFangsong',serif!important;}
-.f-yahei{font-family:'微软雅黑','Microsoft YaHei','PingFang SC',sans-serif!important;}
-.f-notoserif{font-family:'Noto Serif SC',Georgia,serif!important;}
-.f-notosc{font-family:'Noto Sans SC',sans-serif!important;}
-.f-mashan{font-family:'Ma Shan Zheng',cursive!important;}
+.f-songti{font-family:'Songti SC','STSong','华文宋体','宋体',Georgia,serif!important;}
+.f-heiti{font-family:'Heiti SC','STHeiti','黑体','PingFang SC',sans-serif!important;}
+.f-kaiti{font-family:'Kaiti SC','STKaiti','华文楷体','楷体',serif!important;}
+.f-fangsong{font-family:'STFangsong','华文仿宋','仿宋',serif!important;}
+.f-yahei{font-family:'PingFang SC','Microsoft YaHei','微软雅黑',sans-serif!important;}
+.f-notoserif{font-family:'Songti SC','STSong','华文宋体',Georgia,serif!important;}
+.f-notosc{font-family:'PingFang SC','Heiti SC','Microsoft YaHei',sans-serif!important;}
+.f-mashan{font-family:'Kaiti SC','STKaiti','华文楷体','楷体',cursive!important;}
 
 /* AUTH */
 .auth-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:300;overflow-y:auto;padding:1.5rem;}
@@ -336,6 +335,50 @@ body.light .wc-bar{background:#fff;}
   #panel-mob-list{display:none!important;}
 }
 </style>
+<script>
+function genAppIcon(){
+  try{
+    const S=180,cv=document.createElement('canvas');
+    cv.width=cv.height=S;const c=cv.getContext('2d');
+    const r=36;c.beginPath();c.moveTo(r,0);c.lineTo(S-r,0);c.quadraticCurveTo(S,0,S,r);
+    c.lineTo(S,S-r);c.quadraticCurveTo(S,S,S-r,S);c.lineTo(r,S);
+    c.quadraticCurveTo(0,S,0,S-r);c.lineTo(0,r);c.quadraticCurveTo(0,0,r,0);
+    c.closePath();c.fillStyle='#16130e';c.fill();
+    c.strokeStyle='rgba(232,188,92,0.35)';c.lineWidth=2.5;c.stroke();
+    // 金色书本
+    c.fillStyle='#e8bc5c';
+    // 书本左页
+    c.beginPath();c.moveTo(82,50);c.bezierCurveTo(58,53,44,63,44,90);
+    c.bezierCurveTo(44,117,58,127,82,130);c.lineTo(82,50);c.fill();
+    // 书本右页
+    c.beginPath();c.moveTo(98,50);c.bezierCurveTo(122,53,136,63,136,90);
+    c.bezierCurveTo(136,117,122,127,98,130);c.lineTo(98,50);c.fill();
+    // 书脊
+    c.fillStyle='#c9a840';c.fillRect(82,50,16,80);
+    // 装饰线（书页纹）
+    c.strokeStyle='rgba(22,19,14,0.3)';c.lineWidth=1;
+    for(let y=65;y<=115;y+=10){
+      c.beginPath();c.moveTo(50,y);c.lineTo(80,y);c.stroke();
+      c.beginPath();c.moveTo(100,y);c.lineTo(130,y);c.stroke();
+    }
+    // 金色发光圆
+    c.beginPath();c.arc(90,90,70,0,Math.PI*2);
+    c.strokeStyle='rgba(232,188,92,0.15)';c.lineWidth=1;c.stroke();
+    ['apple-touch-icon'].forEach(rel=>{
+      let l=document.querySelector("link[rel='"+rel+"']");
+      if(!l){l=document.createElement('link');l.rel=rel;document.head.appendChild(l);}
+      l.href=cv.toDataURL('image/png');
+      l.sizes='180x180';
+    });
+    // favicon
+    let fav=document.querySelector("link[rel='icon']");
+    if(!fav){fav=document.createElement('link');fav.rel='icon';document.head.appendChild(fav);}
+    fav.href=cv.toDataURL('image/png');
+  }catch(e){}
+}
+genAppIcon();
+</script>
+
 
 <script id="hb-store">var __HB__={"v":3,"accounts":[]};</script>
 
@@ -452,7 +495,7 @@ body.light .wc-bar{background:#fff;}
       <!-- Mobile list panel -->
       <div id="panel-mob-list">
         <div class="mob-col-bar" id="mob-col-bar">
-          <button class="mob-col-add" onclick="toggleColForm();closeSidebar()">+</button>
+          <button class="mob-col-add" onclick="mobAddCol()">+</button>
         </div>
         <div class="mob-s-wrap">
           <input class="mob-s-inp" type="text" id="mob-s-inp" placeholder="🔍 搜索日记…" oninput="mobSearch(this.value)">
@@ -504,12 +547,11 @@ body.light .wc-bar{background:#fff;}
               <div class="tb-sep"></div>
               <select class="tb-sel" id="font-sel" onchange="applySelFont(this.value)" title="选中文字字体">
                 <option value="">字体</option>
-                <option value="'Noto Serif SC','宋体',Georgia,serif">思源宋</option>
-                <option value="'Noto Sans SC','微软雅黑',sans-serif">思源黑</option>
-                <option value="'楷体','KaiTi',serif">楷体</option>
-                <option value="'仿宋','FangSong',serif">仿宋</option>
-                <option value="'微软雅黑','PingFang SC',sans-serif">雅黑</option>
-                <option value="'Ma Shan Zheng',cursive">马善政</option>
+                <option value="'Songti SC','STSong','华文宋体',Georgia,serif">宋体</option>
+                <option value="'Kaiti SC','STKaiti','华文楷体','楷体',serif">楷体</option>
+                <option value="'STFangsong','华文仿宋','仿宋',serif">仿宋</option>
+                <option value="'PingFang SC','Microsoft YaHei',sans-serif">苹方/雅黑</option>
+                <option value="'Heiti SC','STHeiti','黑体',sans-serif">黑体</option>
               </select>
               <div class="tb-sep"></div>
               <button class="tb-btn" onclick="fmt('removeFormat')" style="font-size:.68rem">清格式</button>
@@ -522,14 +564,13 @@ body.light .wc-bar{background:#fff;}
           <label class="f-lbl">默认字体（整篇）</label>
           <select class="f-sel" id="f-font">
             <option value="">跟随全局设置</option>
-            <option value="f-songti">宋体</option>
-            <option value="f-notoserif">思源宋体</option>
-            <option value="f-heiti">黑体</option>
-            <option value="f-notosc">思源黑体</option>
-            <option value="f-kaiti">楷体</option>
+            <option value="f-songti">宋体（Songti SC）</option>
+            <option value="f-kaiti">楷体（Kaiti SC）</option>
             <option value="f-fangsong">仿宋</option>
-            <option value="f-yahei">微软雅黑</option>
-            <option value="f-mashan">马善政楷体</option>
+            <option value="f-yahei">苹方/微软雅黑</option>
+            <option value="f-heiti">黑体</option>
+            <option value="f-notoserif">华文宋体</option>
+            <option value="f-mashan">华文楷体（草书感）</option>
           </select>
         </div>
         <div class="img-sec">
@@ -663,13 +704,12 @@ const COL_COLORS=['#e8bc5c','#5aafdf','#df5a7a','#5adf9a','#a07adf','#df8c5a','#
 const AVATARS=['🐉','🦁','🌙','🌸','⭐','🦋','🌊','🔥','🌿','🎯'];
 const FONTS=[
   {id:'f-songti',label:'宋体'},
-  {id:'f-notoserif',label:'思源宋体'},
-  {id:'f-heiti',label:'黑体'},
-  {id:'f-notosc',label:'思源黑体'},
   {id:'f-kaiti',label:'楷体'},
   {id:'f-fangsong',label:'仿宋'},
-  {id:'f-yahei',label:'微软雅黑'},
-  {id:'f-mashan',label:'马善政楷体'},
+  {id:'f-yahei',label:'苹方/雅黑'},
+  {id:'f-heiti',label:'黑体'},
+  {id:'f-notoserif',label:'华文宋体'},
+  {id:'f-mashan',label:'华文楷体'},
 ];
 const GIST_FILE='hongbo_diary_sync.json';
 const GIST_DESC='hongbo-diary-sync-v3';
@@ -801,18 +841,20 @@ function hideAllScreens(){
   ['sc-list','sc-login','sc-newaccount'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById('app').style.display='none';
 }
-async function showAccList(){
+async function showAccList(skipAuto=false){
   hideAllScreens();
   const hb=storeGet();
   const accs=hb.accounts||[];
   document.getElementById('list-sub').textContent=accs.length?'选择账号登录':'还没有账号，请新建一个';
-  // check auto-login
-  for(const acc of accs){
-    const savedPw=await checkRemember(acc.id);
-    if(savedPw){
-      selAccId=acc.id;
-      await doLogin(acc.id,savedPw,false);
-      return;
+  // check auto-login（切换账号时跳过）
+  if(!skipAuto){
+    for(const acc of accs){
+      const savedPw=await checkRemember(acc.id);
+      if(savedPw){
+        selAccId=acc.id;
+        await doLogin(acc.id,savedPw,false);
+        return;
+      }
     }
   }
   document.getElementById('acc-list').innerHTML=accs.map((acc,i)=>`
@@ -949,7 +991,7 @@ function doSwitchAcc(){
   data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:null};
   st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:''};
   syncToken=null;syncGistId=null;
-  showAccList();
+  showAccList(true);
 }
 </script>
 <script>
@@ -1111,6 +1153,14 @@ function updateCount(){
 }
 
 function filterCol(id){st.colId=id;renderAll();}
+function mobAddCol(){
+  const name=prompt('新建专栏（最多10个字）:');
+  if(!name||!name.trim())return;
+  if(!data.columns)data.columns=[];
+  data.columns.push({id:Date.now().toString(),name:name.trim().slice(0,10),color:COL_COLORS[data.columns.length%COL_COLORS.length]});
+  saveAccData();renderAll();
+  showToast('专栏「'+name.trim().slice(0,10)+'」已创建');
+}
 function mobFilterCol(id){st.colId=id;renderAll();}
 function doSearch(q){st.q=q;renderList();}
 function mobSearch(q){st.mobQ=q;renderMobList();}
