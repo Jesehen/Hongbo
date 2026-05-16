@@ -35,7 +35,14 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
 input,textarea,select{font-family:inherit;-webkit-appearance:none;}
 
 /* FONTS */
-/* 字体功能已移除 */
+.f-songti{font-family:'Songti SC','STSong','华文宋体','宋体',Georgia,serif!important;}
+.f-heiti{font-family:'Heiti SC','STHeiti','黑体','PingFang SC',sans-serif!important;}
+.f-kaiti{font-family:'Kaiti SC','STKaiti','华文楷体','楷体',serif!important;}
+.f-fangsong{font-family:'STFangsong','华文仿宋','仿宋',serif!important;}
+.f-yahei{font-family:'PingFang SC','Microsoft YaHei','微软雅黑',sans-serif!important;}
+.f-notoserif{font-family:'Songti SC','STSong','华文宋体',Georgia,serif!important;}
+.f-notosc{font-family:'PingFang SC','Heiti SC','Microsoft YaHei',sans-serif!important;}
+.f-mashan{font-family:'Kaiti SC','STKaiti','华文楷体','楷体',cursive!important;}
 
 /* AUTH */
 .auth-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:300;overflow-y:auto;padding:1.5rem;}
@@ -56,7 +63,9 @@ input,textarea,select{font-family:inherit;-webkit-appearance:none;}
 .btn-auth:disabled{opacity:.5;}
 .a-foot{margin-top:1.1rem;padding-top:.9rem;border-top:1px solid var(--bd);display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;}
 .btn-xs{padding:.32rem .7rem;font-size:.76rem;color:var(--tx3);border:1px solid var(--bd);border-radius:6px;}
-
+.remember-row{display:flex;align-items:center;gap:.5rem;margin:.1rem 0 .6rem;text-align:left;}
+.remember-row input[type=checkbox]{width:15px;height:15px;accent-color:var(--gold);}
+.remember-row label{font-size:.8rem;color:var(--tx2);cursor:pointer;}
 
 /* ACCOUNT LIST */
 .acc-list{display:flex;flex-direction:column;gap:.55rem;margin-bottom:1.1rem;}
@@ -280,7 +289,9 @@ body.light .wc-bar{background:#fff;}
 .sync-btn.primary{background:var(--gold);color:#16130e;}
 .sync-btn.ghost{background:var(--card2);color:var(--tx2);border:1px solid var(--bd);}
 #sync-status{font-size:.73rem;color:var(--tx3);margin-top:.45rem;min-height:1em;}
-
+.font-grid{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.4rem;}
+.font-chip{padding:.28rem .6rem;border-radius:5px;font-size:.76rem;border:1px solid var(--bd);color:var(--tx2);cursor:pointer;}
+.font-chip.active{background:var(--gold);color:#16130e;border-color:var(--gold);font-weight:600;}
 
 /* IMG MODAL */
 #img-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:1000;flex-direction:column;align-items:center;justify-content:center;}
@@ -399,6 +410,10 @@ genAppIcon();
         <span class="pw-eye" onclick="togglePw('pw-inp','eye1')" id="eye1">显示</span>
       </div>
     </div>
+    <div class="remember-row">
+      <input type="checkbox" id="remember-cb" checked>
+      <label for="remember-cb">30天内免登录</label>
+    </div>
     <span class="a-err" id="login-err"></span>
     <button class="btn-auth" id="login-btn" onclick="handleLogin()">登 录</button>
   </div>
@@ -480,7 +495,7 @@ genAppIcon();
       <!-- Mobile list panel -->
       <div id="panel-mob-list">
         <div class="mob-col-bar" id="mob-col-bar">
-          <button class="mob-col-add" onclick="toggleSidebar()" title="管理专栏">+</button>
+          <button class="mob-col-add" onclick="mobAddCol()">+</button>
         </div>
         <div class="mob-s-wrap">
           <input class="mob-s-inp" type="text" id="mob-s-inp" placeholder="🔍 搜索日记…" oninput="mobSearch(this.value)">
@@ -529,7 +544,15 @@ genAppIcon();
                 <option value="15px">15</option><option value="18px">18</option>
                 <option value="22px">22</option><option value="28px">28</option>
               </select>
-
+              <div class="tb-sep"></div>
+              <select class="tb-sel" id="font-sel" onchange="applySelFont(this.value)" title="选中文字字体">
+                <option value="">字体</option>
+                <option value="'Songti SC','STSong','华文宋体',Georgia,serif">宋体</option>
+                <option value="'Kaiti SC','STKaiti','华文楷体','楷体',serif">楷体</option>
+                <option value="'STFangsong','华文仿宋','仿宋',serif">仿宋</option>
+                <option value="'PingFang SC','Microsoft YaHei',sans-serif">苹方/雅黑</option>
+                <option value="'Heiti SC','STHeiti','黑体',sans-serif">黑体</option>
+              </select>
               <div class="tb-sep"></div>
               <button class="tb-btn" onclick="fmt('removeFormat')" style="font-size:.68rem">清格式</button>
             </div>
@@ -537,7 +560,19 @@ genAppIcon();
             <div class="wc-bar"><span id="wc-write">0 字</span></div>
           </div>
         </div>
-
+        <div class="form-g">
+          <label class="f-lbl">默认字体（整篇）</label>
+          <select class="f-sel" id="f-font">
+            <option value="">跟随全局设置</option>
+            <option value="f-songti">宋体（Songti SC）</option>
+            <option value="f-kaiti">楷体（Kaiti SC）</option>
+            <option value="f-fangsong">仿宋</option>
+            <option value="f-yahei">苹方/微软雅黑</option>
+            <option value="f-heiti">黑体</option>
+            <option value="f-notoserif">华文宋体</option>
+            <option value="f-mashan">华文楷体（草书感）</option>
+          </select>
+        </div>
         <div class="img-sec">
           <label class="f-lbl">📷 图片（最多9张）</label>
           <div class="img-drop" id="img-area" onclick="document.getElementById('img-file-inp').click()">
@@ -634,7 +669,10 @@ genAppIcon();
     <div class="more-grid">
       <button class="more-item" onclick="showTimeline();hideMore()">📅 时间轴</button>
       <button class="more-item" onclick="showAlbum();hideMore()">🖼 相册</button>
-
+      <div style="background:var(--card);border-radius:10px;border:1px solid var(--bd);padding:.85rem 1rem;">
+        <div style="font-size:.82rem;color:var(--gold);font-weight:600;margin-bottom:.5rem">字体切换（全局默认）</div>
+        <div class="font-grid" id="more-font-grid"></div>
+      </div>
       <div class="sync-section">
         <div class="sync-title">🔄 双端同步</div>
         <div class="sync-desc">连接 GitHub Token（需 gist 权限），手机和电脑日记自动同步。</div>
@@ -664,7 +702,15 @@ genAppIcon();
 /* ===== CONSTANTS ===== */
 const COL_COLORS=['#e8bc5c','#5aafdf','#df5a7a','#5adf9a','#a07adf','#df8c5a','#5adfc0','#dfcf5a'];
 const AVATARS=['🐉','🦁','🌙','🌸','⭐','🦋','🌊','🔥','🌿','🎯'];
-
+const FONTS=[
+  {id:'f-songti',label:'宋体'},
+  {id:'f-kaiti',label:'楷体'},
+  {id:'f-fangsong',label:'仿宋'},
+  {id:'f-yahei',label:'苹方/雅黑'},
+  {id:'f-heiti',label:'黑体'},
+  {id:'f-notoserif',label:'华文宋体'},
+  {id:'f-mashan',label:'华文楷体'},
+];
 const GIST_FILE='hongbo_diary_sync.json';
 const GIST_DESC='hongbo-diary-sync-v3';
 
@@ -795,12 +841,22 @@ function hideAllScreens(){
   ['sc-list','sc-login','sc-newaccount'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById('app').style.display='none';
 }
-async function showAccList(){
+async function showAccList(skipAuto=false){
   hideAllScreens();
   const hb=storeGet();
   const accs=hb.accounts||[];
   document.getElementById('list-sub').textContent=accs.length?'选择账号登录':'还没有账号，请新建一个';
-  // 无自动登录
+  // check auto-login（切换账号时跳过）
+  if(!skipAuto){
+    for(const acc of accs){
+      const savedPw=await checkRemember(acc.id);
+      if(savedPw){
+        selAccId=acc.id;
+        await doLogin(acc.id,savedPw,false);
+        return;
+      }
+    }
+  }
   document.getElementById('acc-list').innerHTML=accs.map((acc,i)=>`
     <div class="acc-card" onclick="showLogin('${acc.id}')">
       <div class="acc-av" style="background:${COL_COLORS[i%COL_COLORS.length]}">${acc.avatar||'📖'}</div>
@@ -843,7 +899,8 @@ async function handleLogin(){
   if(!pw){errEl.textContent='请输入密码';return;}
   const btn=document.getElementById('login-btn');
   btn.textContent='验证中…';btn.disabled=true;
-  const ok=await doLogin(selAccId,pw,false);
+  const remember=document.getElementById('remember-cb').checked;
+  const ok=await doLogin(selAccId,pw,remember);
   if(!ok){
     errEl.textContent='密码错误，请重试';
     document.getElementById('pw-inp').value='';
@@ -862,7 +919,7 @@ async function doLogin(accId,pw,remember){
     CKEY=key;curAccId=accId;
     if(acc.data){const plain=await aesDec(CKEY,acc.data);data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:null,...JSON.parse(plain)};}
     else data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:null};
-    // 不自动记住密码
+    if(remember)await rememberPw(accId,pw);
     enterApp();
     return true;
   }catch{CKEY=null;curAccId=null;return false;}
@@ -891,6 +948,7 @@ async function handleNewAccount(){
     CKEY=key;curAccId=id;
     data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:null};
     await saveAccData();
+    await rememberPw(id,pw);
     enterApp();
   }catch{errEl.textContent='创建失败';btn.textContent='创 建 账 号';btn.disabled=false;}
 }
@@ -915,7 +973,8 @@ function enterApp(){
   if(theme==='light'&&!document.body.classList.contains('light'))document.body.classList.add('light');
   else if(theme==='dark'&&document.body.classList.contains('light'))document.body.classList.remove('light');
   updateThemeBtn();
-
+  // apply default font
+  applyGlobalFont(data.settings?.defaultFont||'');
   st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:''};
   document.getElementById('s-inp').value='';
   document.getElementById('mob-s-inp').value='';
@@ -924,7 +983,7 @@ function enterApp(){
   if(data.syncConfig){syncToken=data.syncConfig.token;syncGistId=data.syncConfig.gistId;}
   if(document.getElementById('sync-token-inp'))document.getElementById('sync-token-inp').value=syncToken||'';
   if(syncToken&&syncGistId)syncFromGist(false);
-
+  renderMoreFonts();
   isMob()?showMobPanel('list'):showPanel('panel-empty');
 }
 function doSwitchAcc(){
@@ -932,7 +991,7 @@ function doSwitchAcc(){
   data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:null};
   st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:''};
   syncToken=null;syncGistId=null;
-  showAccList();
+  showAccList(true);
 }
 </script>
 <script>
@@ -984,7 +1043,26 @@ function showPanel(id){
   if(t){t.style.display='flex';t.style.flexDirection='column';t.scrollTop=0;}
 }
 
-
+/* ===== FONT ===== */
+function applyGlobalFont(fontId){
+  document.getElementById('f-editor')&&(document.getElementById('f-body').className='f-editor'+(fontId?' '+fontId:''));
+  const vc=document.getElementById('v-content');
+  if(vc){vc.className='v-content'+(fontId?' '+fontId:'');}
+  data.settings=data.settings||{};
+  data.settings.defaultFont=fontId;
+}
+function renderMoreFonts(){
+  const el=document.getElementById('more-font-grid');
+  if(!el)return;
+  const cur=data.settings?.defaultFont||'';
+  el.innerHTML=FONTS.map(f=>`<button class="font-chip${f.id===cur?' active':''}" onclick="setGlobalFont('${f.id}')">${f.label}</button>`).join('');
+}
+function setGlobalFont(fontId){
+  applyGlobalFont(fontId);
+  saveAccData();
+  renderMoreFonts();
+  showToast('字体已切换：'+FONTS.find(f=>f.id===fontId)?.label);
+}
 
 /* ===== RENDER ALL ===== */
 function renderAll(){renderCols();renderList();renderMobColBar();renderMobList();updateCount();}
@@ -1075,7 +1153,14 @@ function updateCount(){
 }
 
 function filterCol(id){st.colId=id;renderAll();}
-
+function mobAddCol(){
+  const name=prompt('新建专栏（最多10个字）:');
+  if(!name||!name.trim())return;
+  if(!data.columns)data.columns=[];
+  data.columns.push({id:Date.now().toString(),name:name.trim().slice(0,10),color:COL_COLORS[data.columns.length%COL_COLORS.length]});
+  saveAccData();renderAll();
+  showToast('专栏「'+name.trim().slice(0,10)+'」已创建');
+}
 function mobFilterCol(id){st.colId=id;renderAll();}
 function doSearch(q){st.q=q;renderList();}
 function mobSearch(q){st.mobQ=q;renderMobList();}
@@ -1174,6 +1259,7 @@ async function saveEntry(){
     colId:document.getElementById('f-col').value||null,
     url:document.getElementById('f-url').value.trim(),
     linkTitle:document.getElementById('f-linktitle').value.trim(),
+    fontFamily:document.getElementById('f-font').value||'',
     images:[...st.pendingImgs],
     starred:st.editId?((data.entries||[]).find(x=>x.id===st.editId)||{}).starred||false:false,
   };
@@ -1206,6 +1292,21 @@ function applySelSize(size){
   }
   document.getElementById('size-sel').value='';
 }
+function applySelFont(fontFamily){
+  if(!fontFamily)return;
+  const editor=document.getElementById('f-body');editor.focus();
+  const sel=window.getSelection();
+  if(sel&&!sel.isCollapsed&&sel.rangeCount&&editor.contains(sel.anchorNode)){
+    try{
+      const range=sel.getRangeAt(0);
+      const frag=range.extractContents();
+      const span=document.createElement('span');span.style.fontFamily=fontFamily;span.appendChild(frag);
+      range.insertNode(span);
+      sel.removeAllRanges();const r=document.createRange();r.selectNodeContents(span);sel.addRange(r);
+    }catch{}
+  }
+  document.getElementById('font-sel').value='';
+}
 </script>
 <script>
 /* ===== VIEW ===== */
@@ -1224,7 +1325,6 @@ function parseVideoUrl(url){
 }
 
 function viewEntry(id){
-  closeSidebar();
   const e=(data.entries||[]).find(x=>x.id===id);
   if(!e){if(isMob())showMobPanel('list');else showPanel('panel-empty');return;}
   st.entryId=id;
@@ -1262,7 +1362,7 @@ function viewEntry(id){
   }else imgEl.style.display='none';
   // Content with font
   const vc=document.getElementById('v-content');
-  vc.className='v-content';
+  vc.className='v-content'+(e.fontFamily?' '+e.fontFamily:data.settings?.defaultFont?' '+data.settings.defaultFont:'');
   vc.innerHTML=e.bodyHtml||(e.body?esc(e.body).replace(/\n/g,'<br>'):'');
   if(isMob()){showMobPanel('view');setNavActive('list');}
   else showPanel('panel-view');
