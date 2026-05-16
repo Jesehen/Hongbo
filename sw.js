@@ -21,6 +21,21 @@ self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   if (url.origin !== self.location.origin) return;
 
+  // Network-first for HTML and critical resources
+  if (url.pathname === '/' || url.pathname.endsWith('.html')) {
+    e.respondWith(
+      fetch(e.request).then(response => {
+        if (response && response.status === 200) {
+          const clone = response.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+        }
+        return response;
+      }).catch(() => caches.match(e.request))
+    );
+    return;
+  }
+
+  // Cache-first for other resources
   e.respondWith(
     caches.match(e.request).then(cached => {
       const fetchPromise = fetch(e.request).then(response => {
@@ -30,7 +45,6 @@ self.addEventListener('fetch', e => {
         }
         return response;
       }).catch(() => cached);
-      // Return cache first, fallback to network
       return cached || fetchPromise;
     })
   );
