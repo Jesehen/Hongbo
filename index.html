@@ -173,7 +173,8 @@ body.light .editor-tb{background:#f5f0e8;border-color:#c8c0a8;}
 .tb-btn{padding:.26rem .46rem;border-radius:5px;font-size:.82rem;color:var(--ink);min-width:27px;text-align:center;}
 .tb-btn:active{background:#d0c8a8;}
 .tb-sep{width:1px;height:16px;background:#d0c8b0;margin:0 .12rem;flex-shrink:0;}
-.tb-sel{padding:.24rem .38rem;background:#f0ebe0;border:1px solid #d0c8b0;border-radius:5px;color:var(--ink);font-size:.76rem;outline:none;max-width:90px;}
+.tb-sel{padding:.24rem .34rem;background:#f0ebe0;border:1px solid #d0c8b0;border-radius:5px;color:var(--ink);font-size:.76rem;outline:none;max-width:82px;}
+#font-sel{max-width:76px;}
 body.light .tb-sel{background:#f5f0e8;border-color:#c8c0a8;}
 .f-editor{min-height:200px;padding:.82rem .95rem;color:var(--ink);line-height:1.9;outline:none;word-break:break-word;}
 .f-editor:empty:before{content:attr(data-placeholder);color:#b0a888;pointer-events:none;}
@@ -457,6 +458,7 @@ genAppIcon();
       <button class="hdr-btn d-only" onclick="showAlbum()">相册</button>
       <button class="hdr-btn d-only" onclick="showTimeline()">时间轴</button>
       <button class="hdr-btn gold" onclick="saveHtmlFile()">💾 保存</button>
+      <button class="hdr-btn d-only" onclick="showMore()">更多</button>
       <button class="hdr-btn gold d-only" onclick="doSwitchAcc()">切换</button>
     </div>
   </header>
@@ -720,6 +722,25 @@ let data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfi
 let st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:''};
 let syncToken=null, syncGistId=null;
 
+let lastEditorRange=null;
+function cacheEditorSelection(){
+  const editor=document.getElementById('f-body');
+  const sel=window.getSelection();
+  if(!editor||!sel||sel.rangeCount===0)return;
+  const range=sel.getRangeAt(0);
+  if(editor.contains(range.commonAncestorContainer))lastEditorRange=range.cloneRange();
+}
+function getEditorRange(){
+  const editor=document.getElementById('f-body');
+  const sel=window.getSelection();
+  if(editor&&sel&&sel.rangeCount){
+    const r=sel.getRangeAt(0);
+    if(editor.contains(r.commonAncestorContainer)&&!sel.isCollapsed)return r;
+  }
+  return lastEditorRange;
+}
+
+
 /* ===== STORE (embedded HTML) ===== */
 function storeGet(){
   try{const ls=localStorage.getItem('hb_v3');if(ls){const p=JSON.parse(ls);if(p&&p.v===3)return p;}}catch{}
@@ -820,6 +841,9 @@ window.onload=async()=>{
   document.getElementById('pw-inp').addEventListener('keydown',e=>{if(e.key==='Enter')handleLogin();});
   document.getElementById('new-pw2').addEventListener('keydown',e=>{if(e.key==='Enter')handleNewAccount();});
   document.getElementById('f-body').addEventListener('input',updateWordCount);
+  document.getElementById('f-body').addEventListener('mouseup',cacheEditorSelection);
+  document.getElementById('f-body').addEventListener('keyup',cacheEditorSelection);
+  document.addEventListener('selectionchange',cacheEditorSelection);
   document.getElementById('f-body').addEventListener('paste',e=>{
     e.preventDefault();
     const text=(e.clipboardData||window.clipboardData).getData('text/plain');
@@ -1307,9 +1331,10 @@ function applySelSize(size){
   if(!size)return;
   const editor=document.getElementById('f-body');editor.focus();
   const sel=window.getSelection();
-  if(sel&&!sel.isCollapsed&&sel.rangeCount&&editor.contains(sel.anchorNode)){
+  const range=getEditorRange();
+  if(range&&editor.contains(range.commonAncestorContainer)){
     try{
-      const range=sel.getRangeAt(0);
+      sel.removeAllRanges();sel.addRange(range);
       const frag=range.extractContents();
       const span=document.createElement('span');span.style.fontSize=size;span.appendChild(frag);
       range.insertNode(span);
@@ -1322,9 +1347,10 @@ function applySelFont(fontFamily){
   if(!fontFamily)return;
   const editor=document.getElementById('f-body');editor.focus();
   const sel=window.getSelection();
-  if(sel&&!sel.isCollapsed&&sel.rangeCount&&editor.contains(sel.anchorNode)){
+  const range=getEditorRange();
+  if(range&&editor.contains(range.commonAncestorContainer)){
     try{
-      const range=sel.getRangeAt(0);
+      sel.removeAllRanges();sel.addRange(range);
       const frag=range.extractContents();
       const span=document.createElement('span');span.style.fontFamily=fontFamily;span.appendChild(frag);
       range.insertNode(span);
