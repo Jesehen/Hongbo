@@ -363,6 +363,8 @@ genAppIcon();
 
 <script id="hb-store">var __HB__={"v":3,"accounts":[]};</script>
 
+</head>
+<body>
 <div class="auth-screen" id="sc-list">
   <div class="auth-box">
     <span class="auth-book">📖</span>
@@ -372,6 +374,7 @@ genAppIcon();
     <button class="btn-newacc" onclick="showNewAcc()">＋ 新建账号</button>
     <div class="a-foot">
       <button class="btn-xs" onclick="document.getElementById('imp-login').click()">导入备份</button>
+      <button class="btn-xs" onclick="restoreFromToken()">从云端恢复账号</button>
       <input type="file" id="imp-login" accept=".json" style="display:none" onchange="importFromLogin(this)">
     </div>
   </div>
@@ -466,7 +469,7 @@ genAppIcon();
         <div class="empty-ctr">
           <div class="empty-icon">📖</div>
           <p class="empty-t">选择日记或新建记录</p>
-          <p class="empty-s">大人您该写日记了</p>
+          <p class="empty-s">大人该写日记了</p>
         </div>
       </div>
 
@@ -492,7 +495,7 @@ genAppIcon();
         <div class="form-2col">
           <div class="form-g" style="margin-bottom:0">
             <label class="f-lbl">标题（可选）</label>
-            <input class="f-inp" type="text" id="f-title" placeholder="给这篇起个标题…">
+            <input class="f-inp" type="text" id="f-title" placeholder="大人请起个标题…">
           </div>
           <div class="form-g" style="margin-bottom:0">
             <label class="f-lbl">归属专栏</label>
@@ -1684,7 +1687,7 @@ async function syncToGist(){
     if(!acc?.data)return;
     const encData=await readAccCipher(acc.data);
     if(!encData)return;
-    const payload=JSON.stringify({encData,updated:Date.now()});
+    const acc2=storeGetAcc(curAccId);const payload=JSON.stringify({encData,salt:acc2.salt,ver:acc2.ver,updated:Date.now()});
     await gistApi('PATCH','/gists/'+syncGistId,{
       files:{[GIST_FILE]:{content:payload},[GIST_BAK_FILE]:{content:payload}}
     });
@@ -1711,6 +1714,40 @@ function doImport(inp){
     }catch{alert('文件格式不正确');}
   };r.readAsText(file);inp.value='';
 }
+
+async function restoreFromToken(){
+  const token=prompt('输入 GitHub Token：');
+  if(!token?.trim())return;
+  syncToken=token.trim();
+  const gistId=await findOrCreateGist();
+  if(!gistId){alert('未找到云端数据');syncToken=null;return;}
+  const gist=await gistApi('GET','/gists/'+gistId);
+  const raw=gist?.files?.[GIST_FILE]?.content;
+  if(!raw||raw==='{}'){alert('云端暂无数据');syncToken=null;return;}
+  const remote=JSON.parse(raw);
+  if(!remote.salt||!remote.ver||!remote.encData){alert('云端数据格式异常，请先在原设备点一次"立即同步"推送数据');syncToken=null;return;}
+  const name=prompt('给这个账号起个名字：')||'我的账号';
+  const pw=prompt('输入密码：');
+  if(!pw){syncToken=null;return;}
+  try{
+    const salt=Uint8Array.from(atob(remote.salt),c=>c.charCodeAt(0));
+    const key=await deriveKey(pw,salt);
+    const ver=await aesDec(key,remote.ver);
+    if(ver!=='HONGBO_OK'){alert('密码错误');syncToken=null;return;}
+    const hb=storeGet();
+    const id=Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+    storeAddAcc({id,name,avatar:AVATARS[hb.accounts.length%AVATARS.length],salt:remote.salt,ver:remote.ver,data:null});
+    CKEY=key;curAccId=id;
+    const plain=await aesDec(key,remote.encData);
+    data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:null,...JSON.parse(plain)};
+    data.syncConfig={token:token.trim(),gistId};
+    syncGistId=gistId;
+    await saveAccData();
+    enterApp();
+    showToast('☁️ 账号已从云端恢复');
+  }catch(e){alert('恢复失败：'+(e.message||'密码可能有误'));syncToken=null;}
+}
+
 function importFromLogin(inp){
   const file=inp.files[0];if(!file)return;
   const r=new FileReader();
