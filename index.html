@@ -103,7 +103,7 @@ main{display:flex;flex:1;overflow:hidden;}
 
 aside{width:270px;flex-shrink:0;background:var(--sf);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden;}
 .col-hdr{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1rem .5rem;}
-.col-hdr-t{font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);font-weight:600;}
+.col-hdr-t{font-size:.85rem;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);font-weight:600;}
 .col-add{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:7px;color:var(--gold);font-size:1.25rem;background:var(--card);border:1px solid var(--bd);}
 .col-add:active{background:var(--card2);}
 .col-new-form{display:flex;gap:.4rem;margin:0 .85rem .55rem;align-items:center;}
@@ -116,9 +116,9 @@ aside{width:270px;flex-shrink:0;background:var(--sf);border-right:1px solid var(
 .col-item:active{background:var(--card2);}
 .col-item.active{background:var(--card);border-color:var(--bd2);}
 .col-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;}
-.col-name{flex:1;font-size:.92rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tx);}
-.col-cnt{font-size:.72rem;color:var(--tx3);background:var(--card2);padding:.12rem .52rem;border-radius:12px;min-width:1.6em;text-align:center;flex-shrink:0;}
-.col-del{opacity:0;font-size:.72rem;color:var(--red);padding:0 4px;transition:opacity .15s;}
+.col-name{flex:1;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tx);}
+.col-cnt{font-size:.82rem;color:var(--tx3);background:var(--card2);padding:.12rem .52rem;border-radius:12px;min-width:1.6em;text-align:center;flex-shrink:0;}
+.col-del{opacity:0;font-size:.82rem;color:var(--red);padding:0 4px;transition:opacity .15s;}
 .col-item:hover .col-del{opacity:1;}
 @media(max-width:767px){.col-del{opacity:.45!important;}}
 .new-btn-desk{margin:.4rem .75rem .3rem;padding:.52rem;background:var(--gold);color:#16130e;font-weight:700;font-size:.85rem;border-radius:8px;text-align:center;display:block;flex-shrink:0;}
@@ -326,11 +326,9 @@ body.light .wc-bar{background:#fff;}
   .f-editor{min-height:160px;}
   #sidebar .new-btn-desk,#sidebar .s-wrap,#sidebar .e-list{display:none!important;}
   .col-item{padding:.95rem .85rem;}
-  .col-name{font-size:1.02rem;}
   .col-dot{width:13px;height:13px;}
-  .col-cnt{font-size:.8rem;padding:.15rem .6rem;}
+  .col-cnt{padding:.15rem .6rem;}
   .col-hdr{padding:1.3rem 1rem .65rem;}
-  .col-hdr-t{font-size:.8rem;}
   .col-add{width:32px;height:32px;font-size:1.35rem;}
 }
 @media(min-width:768px){
@@ -529,6 +527,10 @@ genAppIcon();
               <button class="tb-btn" onclick="fmt('bold')"><b>B</b></button>
               <button class="tb-btn" onclick="fmt('italic')"><i>I</i></button>
               <button class="tb-btn" onclick="fmt('underline')"><u>U</u></button>
+              <div class="tb-sep"></div>
+              <button class="tb-btn" onclick="fmt('justifyLeft')" title="居左">左</button>
+              <button class="tb-btn" onclick="fmt('justifyCenter')" title="居中">中</button>
+              <button class="tb-btn" onclick="fmt('justifyRight')" title="居右">右</button>
               <div class="tb-sep"></div>
               <select class="tb-sel" id="size-sel" onchange="applySelSize(this.value)" title="选中文字字号">
                 <option value="">字号</option>
