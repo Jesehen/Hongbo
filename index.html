@@ -469,7 +469,9 @@ genAppIcon();
       <button class="hdr-btn d-only" onclick="showAlbum()">相册</button>
       <button class="hdr-btn d-only" onclick="showTimeline()">时间轴</button>
       <button class="hdr-btn gold" onclick="saveHtmlFile()">💾 保存</button>
+recover-fix
       <button class="hdr-btn d-only" onclick="doExport()">📤 备份</button>
+
       <button class="hdr-btn d-only" onclick="showMore()">更多</button>
       <button class="hdr-btn gold d-only" onclick="doSwitchAcc()">切换</button>
     </div>
@@ -855,6 +857,8 @@ function storeSet(hb){
     localStorage.setItem(HB_MAIN_KEY,payload);
     return true;
   }catch{return false;}
+  try{localStorage.setItem('hb_v3',payload);return true;}
+  catch{return false;}
 }
 function storeGetAcc(id){return storeGet().accounts.find(a=>a.id===id)||null;}
 function storeUpdateAcc(id,patch){
@@ -898,6 +902,8 @@ async function saveAccData(){
   const enc=await aesEnc(CKEY,JSON.stringify(data));
   const packed=await saveAccCipherToDb(enc);
   const ok=storeUpdateAcc(curAccId,{data:packed,updated:Date.now()});
+  const enc=await aesEnc(CKEY,JSON.stringify(data));
+  const ok=storeUpdateAcc(curAccId,{data:enc,updated:Date.now()});
   if(!ok)throw new Error('本地存储空间不足，数据未能保存。请减少图片数量/大小后重试。');
   return true;
 }
@@ -1525,6 +1531,7 @@ async function viewEntry(id){
   if(e.images&&e.images.length){
     const resolved=await materializeImageList(e.images);
     imgEl.innerHTML=resolved.map((src,i)=>`<img class="v-img" src="${src}" alt="图${i+1}" onclick="openImgModalByEncoded('${encodeURIComponent(src)}','${encodeURIComponent(e.title||'无标题')}')">`).join('');
+    imgEl.innerHTML=e.images.map((src,i)=>`<img class="v-img" src="${src}" alt="图${i+1}" onclick="openImgModalByEncoded('${encodeURIComponent(src)}','${encodeURIComponent(e.title||'无标题')}')">`).join('');
     imgEl.style.display='flex';
   }else imgEl.style.display='none';
   // Content with font
@@ -1647,6 +1654,8 @@ async function renderAlbum(){
     </div>`;
   }));
   body.innerHTML=blocks.join('');
+      ${items.map(item=>`<img class="album-img" src="${item.src}" alt="${esc(item.title)}" onclick="openImgModalByEncoded('${encodeURIComponent(item.src)}','${encodeURIComponent(item.title)}')" title="${esc(item.title)}">`).join('')}
+    </div>`).join('');
 }
 
 /* ===== TIMELINE ===== */
