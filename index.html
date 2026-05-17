@@ -656,6 +656,9 @@ genAppIcon();
       <button class="mob-nav-btn" id="nav-album" onclick="showAlbum()">
         <span class="nav-ic">🖼</span><span>相册</span>
       </button>
+      <button class="mob-nav-btn" id="nav-timeline" onclick="showTimeline()">
+        <span class="nav-ic">📅</span><span>时间轴</span>
+      </button>
       <button class="mob-nav-btn" id="nav-more" onclick="showMore()">
         <span class="nav-ic">⚙️</span><span>更多</span>
       </button>
@@ -668,8 +671,7 @@ genAppIcon();
   <div class="more-panel">
     <div class="more-title">更多操作</div>
     <div class="more-grid">
-      <button class="more-item" onclick="showTimeline();hideMore()">📅 时间轴</button>
-      <button class="more-item" onclick="showAlbum();hideMore()">🖼 相册</button>
+
       <div style="background:var(--card);border-radius:10px;border:1px solid var(--bd);padding:.85rem 1rem;">
         <div style="font-size:.82rem;color:var(--gold);font-weight:600;margin-bottom:.5rem">字体切换（全局默认）</div>
         <div class="font-grid" id="more-font-grid"></div>
@@ -1140,7 +1142,7 @@ function closeSidebar(){
   document.getElementById('aside-ov').classList.remove('show');
 }
 function setNavActive(tab){
-  ['list','write','album','more'].forEach(t=>{
+  ['list','write','album','timeline','more'].forEach(t=>{
     const el=document.getElementById('nav-'+t);
     if(el)el.classList.toggle('active',t===tab);
   });
@@ -1641,7 +1643,7 @@ function showTimeline(){
   const inpA=document.getElementById('tl-after');if(inpA)inpA.value=st.tlAfter||'';
   const inpB=document.getElementById('tl-before');if(inpB)inpB.value=st.tlBefore||'';
   renderTimeline();
-  if(isMob()){showMobPanel('timeline');setNavActive('more');}
+  if(isMob()){showMobPanel('timeline');setNavActive('timeline');}
   else showPanel('panel-timeline');
 }
 function setTimelineAfter(v){st.tlAfter=v||'';renderTimeline();}
