@@ -12,22 +12,8 @@
 <!-- 使用系统字体，无需外部加载 -->
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-:root{
-  --bg:#16130e;--sf:#201c16;--card:#2a2419;--card2:#342e22;
-  --gold:#e8bc5c;--gdim:#9a7e3a;
-  --tx:#f2e8d0;--tx2:#b8a882;--tx3:#7a6e58;
-  --red:#e06060;--blue:#5aafdf;--green:#5adf9a;
-  --bd:rgba(232,188,92,.2);--bd2:rgba(232,188,92,.4);
-  --paper:#fefbf3;--ink:#1a1008;
-}
-body.light{
-  --bg:#f0ebe0;--sf:#e8e1d4;--card:#ddd6c8;--card2:#d0c8b8;
-  --gold:#8a6420;--gdim:#b08840;
-  --tx:#1a1008;--tx2:#4a3c28;--tx3:#8a7860;
-  --red:#c04040;--blue:#1a6aaa;--green:#2a8a5a;
-  --bd:rgba(138,100,32,.25);--bd2:rgba(138,100,32,.5);
-  --paper:#fff8f0;--ink:#1a1008;
-}
+:root{--bg:#16130e;--sf:#201c16;--card:#2a2419;--card2:#342e22;--gold:#e8bc5c;--gdim:#9a7e3a;--tx:#f2e8d0;--tx2:#b8a882;--tx3:#7a6e58;--red:#e06060;--blue:#5aafdf;--green:#5adf9a;--bd:rgba(232,188,92,.2);--bd2:rgba(232,188,92,.4);--paper:#fefbf3;--ink:#1a1008;}
+body.light{--bg:#f0ebe0;--sf:#e8e1d4;--card:#ddd6c8;--card2:#d0c8b8;--gold:#8a6420;--gdim:#b08840;--tx:#1a1008;--tx2:#4a3c28;--tx3:#8a7860;--red:#c04040;--blue:#1a6aaa;--green:#2a8a5a;--bd:rgba(138,100,32,.25);--bd2:rgba(138,100,32,.5);--paper:#fff8f0;--ink:#1a1008;}
 html,body{height:100%;-webkit-tap-highlight-color:transparent;}
 body{background:var(--bg);color:var(--tx);font-family:'Microsoft YaHei','PingFang SC',system-ui,sans-serif;height:100%;overflow:hidden;transition:background .25s,color .25s;}
 ::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
@@ -35,35 +21,48 @@ button{cursor:pointer;border:none;background:none;font-family:inherit;color:inhe
 input,textarea,select{font-family:inherit;-webkit-appearance:none;}
 
 /* FONTS */
-.f-songti{font-family:'Songti SC','STSong',Georgia,serif!important;}
+.f-songti{font-family:'Songti SC','STSong','华文宋体','宋体',Georgia,serif!important;}
 .f-heiti{font-family:'Heiti SC','STHeiti','黑体','PingFang SC',sans-serif!important;}
-.f-kaiti{font-family:'Kaiti SC','STKaiti','华文楷体',serif!important;}
-.f-fangsong{font-family:'STFangsong','华文仿宋',serif!important;}
-.f-yahei{font-family:'PingFang SC','Microsoft YaHei',sans-serif!important;}
-.f-notoserif{font-family:'Songti SC','STSong',Georgia,serif!important;}
-.f-mashan{font-family:'Kaiti SC','STKaiti',cursive!important;}
+.f-kaiti{font-family:'Kaiti SC','STKaiti','华文楷体','楷体',serif!important;}
+.f-fangsong{font-family:'STFangsong','华文仿宋','仿宋',serif!important;}
+.f-yahei{font-family:'PingFang SC','Microsoft YaHei','微软雅黑',sans-serif!important;}
+.f-notoserif{font-family:'Songti SC','STSong','华文宋体',Georgia,serif!important;}
+.f-notosc{font-family:'PingFang SC','Heiti SC','Microsoft YaHei',sans-serif!important;}
+.f-mashan{font-family:'Kaiti SC','STKaiti','华文楷体','楷体',cursive!important;}
 /* AUTH */
 .auth-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:300;overflow-y:auto;padding:1.5rem;}
-.auth-box{width:100%;max-width:360px;background:var(--sf);border:1px solid var(--bd);border-radius:20px;padding:2.4rem 2rem;text-align:center;}
+.auth-box{width:100%;max-width:360px;background:var(--sf);border:1px solid var(--bd);border-radius:20px;padding:2.4rem 2rem;text-align:center;position:relative;}
 .auth-book{font-size:2.8rem;display:block;margin-bottom:.8rem;}
 .auth-title{font-family:Georgia,serif;font-size:1.5rem;color:var(--gold);font-weight:normal;margin-bottom:.35rem;}
-.auth-sub{font-size:.82rem;color:var(--tx3);margin-bottom:1.5rem;line-height:1.7;}
-.auth-back{display:flex;align-items:center;gap:.3rem;font-size:.82rem;color:var(--tx3);margin-bottom:1.1rem;background:none;border:none;cursor:pointer;}
+.auth-sub{font-size:.82rem;color:var(--tx3);margin-bottom:1.5rem;line-height:1.7;white-space:pre-line;}
+.auth-back{display:flex;align-items:center;gap:.3rem;font-size:.82rem;color:var(--tx3);margin-bottom:1.1rem;}
 .auth-row{display:flex;flex-direction:column;gap:.5rem;margin-bottom:.55rem;}
-.a-input{width:100%;padding:.75rem 1rem;background:var(--card);border:1.5px solid var(--bd);border-radius:9px;color:var(--tx);font-size:1rem;outline:none;}
+.a-input{width:100%;padding:.75rem 1rem;background:var(--card);border:1.5px solid var(--bd);border-radius:9px;color:var(--tx);font-size:1rem;outline:none;transition:border-color .2s;}
 .a-input:focus{border-color:var(--gold);}
 .pw-wrap{position:relative;}
-.pw-wrap .a-input{padding-right:3.2rem;}
+.pw-wrap .a-input{padding-right:3.2rem;letter-spacing:.08em;}
 .pw-eye{position:absolute;right:.9rem;top:50%;transform:translateY(-50%);font-size:.8rem;color:var(--tx3);cursor:pointer;user-select:none;padding:.3rem;}
 .a-err{color:var(--red);font-size:.79rem;min-height:1.1em;margin-bottom:.5rem;display:block;text-align:left;}
-.btn-auth{width:100%;padding:.82rem;background:var(--gold);color:#16130e;font-weight:700;font-size:1rem;border-radius:10px;margin-top:.3rem;}
+.btn-auth{width:100%;padding:.82rem;background:var(--gold);color:#16130e;font-weight:700;font-size:1rem;border-radius:10px;margin-top:.3rem;transition:background .2s;}
 .btn-auth:active{background:var(--gdim);} 
 .btn-auth:disabled{opacity:.5;} 
-.a-foot{margin-top:1.1rem;padding-top:.9rem;border-top:1px solid var(--bd);display:flex;gap:.5rem;justify-content:center;}
+.a-foot{margin-top:1.1rem;padding-top:.9rem;border-top:1px solid var(--bd);display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;}
 .btn-xs{padding:.32rem .7rem;font-size:.76rem;color:var(--tx3);border:1px solid var(--bd);border-radius:6px;}
 .remember-row{display:flex;align-items:center;gap:.5rem;margin:.1rem 0 .6rem;text-align:left;}
 .remember-row input[type=checkbox]{width:15px;height:15px;accent-color:var(--gold);} 
 .remember-row label{font-size:.8rem;color:var(--tx2);cursor:pointer;}
+/* ACCOUNT LIST */
+.acc-list{display:flex;flex-direction:column;gap:.55rem;margin-bottom:1.1rem;}
+.acc-card{display:flex;align-items:center;gap:.85rem;padding:.8rem 1rem;background:var(--card);border:1px solid var(--bd);border-radius:12px;cursor:pointer;text-align:left;position:relative;}
+.acc-card:active{border-color:var(--bd2);} 
+.acc-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;flex-shrink:0;color:#16130e;}
+.acc-name{font-size:.93rem;color:var(--tx);} 
+.acc-hint{font-size:.7rem;color:var(--tx3);margin-top:.1rem;} 
+.acc-del{position:absolute;right:.7rem;top:50%;transform:translateY(-50%);font-size:.8rem;color:var(--red);padding:.3rem .5rem;opacity:0;transition:opacity .15s;} 
+.acc-card:hover .acc-del,.acc-card:focus-within .acc-del{opacity:1;} 
+@media(max-width:767px){.acc-del{opacity:.5!important;}} 
+.btn-newacc{width:100%;padding:.68rem;background:transparent;color:var(--gold);border:1.5px dashed var(--bd2);border-radius:10px;font-size:.9rem;} 
+.btn-newacc:active{background:rgba(232,188,92,.08);} 
 /* HEADER */
 header{display:flex;align-items:center;justify-content:space-between;padding:0 1.2rem;height:calc(50px + env(safe-area-inset-top,0px));padding-top:env(safe-area-inset-top,0px);background:var(--sf);border-bottom:1px solid var(--bd);flex-shrink:0;gap:.4rem;}
 .hdr-l{display:flex;align-items:center;gap:.5rem;min-width:0;}
@@ -101,12 +100,200 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 1
 /* LAYOUT */
 #app{display:flex;flex-direction:column;height:100%;} 
 main{display:flex;flex:1;overflow:hidden;} 
+/* SIDEBAR (desktop) */
 aside{width:260px;flex-shrink:0;background:var(--sf);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden;} 
 .col-hdr{display:flex;align-items:center;justify-content:space-between;padding:.65rem .75rem .3rem;} 
 .col-hdr-t{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);} 
 .col-add{width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:5px;color:var(--gold);font-size:1.15rem;} 
-/* ... 原文件其余内容保持不变 ... */
-</style>
+.col-add:active{background:var(--card);} 
+.col-new-form{display:none;gap:.35rem;margin:0 .75rem .4rem;align-items:center;} 
+.col-new-form.show{display:flex;} 
+.col-inp{flex:1;padding:.38rem .6rem;background:var(--card);border:1px solid var(--bd);border-radius:6px;color:var(--tx);font-size:.8rem;outline:none;} 
+.col-inp:focus{border-color:var(--gold);} 
+.col-ok{padding:.38rem .65rem;background:var(--gold);color:#16130e;border-radius:6px;font-size:.82rem;font-weight:600;} 
+.col-list{display:flex;flex-direction:column;gap:2px;padding:0 .5rem .4rem;} 
+.col-item{display:flex;align-items:center;gap:.5rem;padding:.42rem .55rem;border-radius:7px;cursor:pointer;border:1px solid transparent;} 
+.col-item:active,.col-item.active{background:var(--card);border-color:var(--bd);} 
+.col-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;} 
+.col-name{flex:1;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tx);} 
+.col-cnt{font-size:.67rem;color:var(--tx3);} 
+.col-del{opacity:0;font-size:.7rem;color:var(--red);padding:0 3px;transition:opacity .15s;} 
+.col-item:hover .col-del{opacity:1;} 
+.new-btn-desk{margin:.4rem .75rem .3rem;padding:.52rem;background:var(--gold);color:#16130e;font-weight:700;font-size:.85rem;border-radius:8px;text-align:center;display:block;flex-shrink:0;} 
+.new-btn-desk:active{background:var(--gdim);} 
+.s-wrap{padding:.35rem .75rem .35rem;flex-shrink:0;} 
+.s-inp{width:100%;padding:.48rem .75rem;background:var(--card);border:1px solid var(--bd);border-radius:7px;color:var(--tx);font-size:.82rem;outline:none;} 
+.s-inp:focus{border-color:var(--gold);} 
+.s-inp::placeholder{color:var(--tx3);} 
+.e-list{flex:1;overflow-y:auto;padding:.25rem .45rem .45rem;} 
+.e-item{padding:.7rem .75rem;border-radius:8px;cursor:pointer;border:1px solid transparent;margin-bottom:3px;} 
+.e-item:active,.e-item.active{background:var(--card);border-color:var(--bd2);} 
+.e-meta{display:flex;align-items:center;gap:.38rem;margin-bottom:.18rem;} 
+.e-cdot{width:5px;height:5px;border-radius:50%;flex-shrink:0;} 
+.e-date{font-size:.67rem;color:var(--gdim);} 
+.e-star{font-size:.8rem;margin-left:auto;} 
+.e-title{font-size:.85rem;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:.12rem;} 
+.e-prev{font-size:.73rem;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;} 
+.e-icons{font-size:.63rem;color:var(--tx3);margin-top:.15rem;} 
+.list-empty{text-align:center;padding:2.5rem 1rem;color:var(--tx3);font-size:.82rem;line-height:2;} 
+/* CONTENT */
+.content{flex:1;overflow:hidden;background:var(--bg);display:flex;flex-direction:column;} 
+.panel{flex:1;overflow-y:auto;padding:1.8rem 2.2rem;display:none;flex-direction:column;} 
+.empty-ctr{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.8rem;opacity:.3;} 
+.empty-icon{font-size:3.2rem;} 
+.empty-t{font-size:1rem;color:var(--tx);} 
+.empty-s{font-size:.82rem;color:var(--tx2);} 
+/* MOB BACK */
+.mob-back-bar{display:none;align-items:center;padding:.65rem .9rem;border-bottom:1px solid var(--bd);flex-shrink:0;background:var(--sf);} 
+.mob-back-btn{display:flex;align-items:center;gap:.3rem;font-size:.88rem;color:var(--tx2);padding:.3rem .5rem;border-radius:7px;} 
+.mob-back-btn:active{color:var(--tx);} 
+.mob-view-title{font-size:.82rem;color:var(--tx3);margin-left:.3rem;} 
+/* WRITE PANEL */
+.write-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem;flex-shrink:0;flex-wrap:wrap;gap:.4rem;} 
+.write-label{font-family:Georgia,serif;font-size:1.05rem;color:var(--gold);font-weight:normal;} 
+.write-dt{font-size:.75rem;color:var(--tx3);} 
+.wc-display{font-size:.72rem;color:var(--tx3);margin-left:auto;} 
+.form-2col{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.8rem;} 
+.form-g{margin-bottom:.8rem;} 
+.f-lbl{display:block;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3);margin-bottom:.28rem;} 
+.f-inp{width:100%;padding:.62rem .85rem;background:var(--paper);border:1.5px solid #d8ceb0;border-radius:8px;color:var(--ink);font-size:.95rem;outline:none;transition:border-color .2s;font-family:Georgia,serif;} 
+.f-inp:focus{border-color:var(--gold);} 
+body.light .f-inp{background:#fff;border-color:#c8c0a8;} 
+.f-sel{width:100%;padding:.62rem .85rem;background:var(--paper);border:1.5px solid #d8ceb0;border-radius:8px;color:var(--ink);font-size:.95rem;outline:none;font-family:Georgia,serif;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .8rem center;padding-right:2rem;} 
+body.light .f-sel{background-color:#fff;border-color:#c8c0a8;} 
+.link-2col{display:grid;grid-template-columns:2fr 1fr;gap:.75rem;} 
+/* EDITOR */
+.editor-wrap{background:var(--paper);border:1.5px solid #d8ceb0;border-radius:8px;overflow:hidden;} 
+.editor-wrap:focus-within{border-color:var(--gold);} 
+body.light .editor-wrap{background:#fff;border-color:#c8c0a8;} 
+.editor-tb{display:flex;align-items:center;gap:.18rem;padding:.38rem .55rem;background:#f0ebe0;border-bottom:1px solid #d8ceb0;flex-wrap:wrap;} 
+body.light .editor-tb{background:#f5f0e8;border-color:#c8c0a8;} 
+.tb-btn{padding:.26rem .46rem;border-radius:5px;font-size:.82rem;color:var(--ink);min-width:27px;text-align:center;} 
+.tb-btn:active{background:#d0c8a8;} 
+.tb-sep{width:1px;height:16px;background:#d0c8b0;margin:0 .12rem;flex-shrink:0;} 
+.tb-sel{padding:.24rem .38rem;background:#f0ebe0;border:1px solid #d0c8b0;border-radius:5px;color:var(--ink);font-size:.76rem;outline:none;max-width:90px;} 
+body.light .tb-sel{background:#f5f0e8;border-color:#c8c0a8;} 
+.f-editor{min-height:200px;padding:.82rem .95rem;color:var(--ink);line-height:1.9;outline:none;word-break:break-word;} 
+.f-editor:empty:before{content:attr(data-placeholder);color:#b0a888;pointer-events:none;} 
+.wc-bar{padding:.3rem .8rem;font-size:.72rem;color:var(--tx3);text-align:right;border-top:1px solid #e8e0cc;background:var(--paper);} 
+body.light .wc-bar{background:#fff;} 
+/* IMAGES */
+.img-sec{margin-bottom:.8rem;} 
+.img-drop{border:2px dashed var(--bd);border-radius:8px;padding:.7rem;display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;min-height:54px;cursor:pointer;} 
+.img-drop:hover{border-color:var(--bd2);} 
+.img-hint{color:var(--tx3);font-size:.78rem;} 
+.img-th-wrap{position:relative;display:inline-block;} 
+.img-th{width:68px;height:68px;object-fit:cover;border-radius:6px;border:1.5px solid var(--bd);} 
+.img-del{position:absolute;top:-5px;right:-5px;width:18px;height:18px;border-radius:50%;background:var(--red);color:#fff;font-size:.62rem;display:flex;align-items:center;justify-content:center;} 
+.img-count{font-size:.72rem;color:var(--tx3);margin-top:.3rem;} 
+.form-actions{display:flex;gap:.65rem;margin-top:.5rem;flex-shrink:0;} 
+.btn-save{padding:.7rem 1.8rem;background:var(--gold);color:#16130e;font-weight:700;border-radius:8px;font-size:.9rem;} 
+.btn-save:active{background:var(--gdim);} 
+.btn-cancel{padding:.7rem 1.1rem;color:var(--tx2);border:1px solid var(--bd);border-radius:8px;font-size:.88rem;} 
+/* VIEW PANEL */
+.v-hdr{margin-bottom:1rem;padding-bottom:.9rem;border-bottom:1px solid var(--bd);} 
+.v-meta{display:flex;align-items:center;gap:.65rem;margin-bottom:.4rem;flex-wrap:wrap;} 
+.v-date{font-size:.78rem;color:var(--tx2);font-family:Georgia,serif;} 
+.v-tag{padding:.16rem .55rem;border-radius:20px;font-size:.68rem;color:#16130e;font-weight:600;} 
+.star-btn{font-size:1.2rem;cursor:pointer;padding:.1rem .3rem;border-radius:5px;transition:transform .15s;} 
+.star-btn:active{transform:scale(1.3);} 
+.v-wc{font-size:.72rem;color:var(--tx3);margin-left:auto;} 
+.v-title{font-family:Georgia,serif;font-size:1.7rem;color:var(--gold);font-weight:normal;line-height:1.3;} 
+.link-card{display:flex;align-items:center;gap:.75rem;padding:.65rem .9rem;background:var(--card);border:1px solid var(--bd);border-radius:8px;margin-bottom:.9rem;} 
+.link-icon{font-size:1.1rem;flex-shrink:0;} 
+.link-info{flex:1;overflow:hidden;} 
+.link-title-t{font-size:.86rem;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;} 
+.link-url-t{font-size:.7rem;color:var(--blue);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;} 
+.link-btns{display:flex;gap:.3rem;flex-shrink:0;} 
+.link-btn{font-size:.74rem;color:var(--tx3);padding:.22rem .5rem;border-radius:5px;border:1px solid var(--bd);text-decoration:none;display:block;} 
+.link-btn:hover{color:var(--tx);} 
+.video-wrap{margin-bottom:.9rem;border-radius:8px;overflow:hidden;background:#000;position:relative;padding-top:56.25%;} 
+.video-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none;} 
+.v-imgs{display:flex;flex-wrap:wrap;gap:.55rem;margin-bottom:1rem;} 
+.v-img{width:110px;height:82px;object-fit:cover;border-radius:7px;border:1.5px solid var(--bd);cursor:pointer;} 
+.v-img:hover{opacity:.85;} 
+.v-content{line-height:1.95;color:var(--tx);flex:1;word-break:break-word;} 
+.v-actions{display:flex;gap:.55rem;margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--bd);} 
+.btn-edit{padding:.45rem .9rem;color:var(--tx2);border:1px solid var(--bd);border-radius:7px;font-size:.82rem;} 
+.btn-edit:hover{color:var(--tx);} 
+.btn-del{padding:.45rem .9rem;color:var(--red);border:1px solid rgba(224,96,96,.35);border-radius:7px;font-size:.82rem;} 
+.btn-del:hover{background:rgba(224,96,96,.1);} 
+/* ALBUM VIEW */
+.album-hdr{display:flex;align-items:center;gap:.5rem;padding:1rem 1.5rem .5rem;flex-shrink:0;} 
+.album-hdr h2{font-family:Georgia,serif;font-size:1.1rem;color:var(--gold);font-weight:normal;flex:1;} 
+.album-body{flex:1;overflow-y:auto;padding:.5rem 1.2rem 2rem;} 
+.album-month{font-size:.8rem;color:var(--gdim);margin:1rem 0 .5rem;} 
+.album-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:4px;margin-bottom:.5rem;} 
+.album-img{aspect-ratio:1;object-fit:cover;border-radius:6px;cursor:pointer;width:100%;} 
+.album-empty{text-align:center;padding:4rem 1rem;color:var(--tx3);font-size:.85rem;} 
+/* TIMELINE VIEW */
+.tl-hdr{display:flex;align-items:center;gap:.5rem;padding:1rem 1.5rem .5rem;flex-shrink:0;} 
+.tl-hdr h2{font-family:Georgia,serif;font-size:1.1rem;color:var(--gold);font-weight:normal;flex:1;} 
+.tl-body{flex:1;overflow-y:auto;padding:.5rem 1.5rem 2rem;} 
+.tl-year{font-size:.95rem;color:var(--gold);font-weight:500;font-family:Georgia,serif;margin:1.2rem 0 .5rem;} 
+.tl-month{margin-bottom:1rem;border-left:2px solid var(--bd2);padding-left:1rem;margin-left:.4rem;} 
+.tl-month-hdr{font-size:.85rem;color:var(--tx2);font-weight:500;margin-bottom:.5rem;display:flex;align-items:center;gap:.4rem;} 
+.tl-entry{background:var(--card);border-radius:7px;padding:.55rem .75rem;margin-bottom:4px;cursor:pointer;border:1px solid transparent;} 
+.tl-entry:hover{border-color:var(--bd);} 
+.tl-entry-date{font-size:.7rem;color:var(--gdim);margin-bottom:.15rem;} 
+.tl-entry-title{font-size:.85rem;color:var(--tx);} 
+.tl-empty{text-align:center;padding:4rem 1rem;color:var(--tx3);font-size:.85rem;} 
+/* MOBILE PANELS */
+#panel-mob-list{flex:1;display:none;flex-direction:column;overflow:hidden;} 
+.mob-col-bar{display:flex;align-items:center;gap:.3rem;padding:.55rem .8rem .4rem;overflow-x:auto;flex-shrink:0;-webkit-overflow-scrolling:touch;scrollbar-width:none;border-bottom:1px solid var(--bd);} 
+.mob-col-bar::-webkit-scrollbar{display:none;} 
+.mob-col-tab{padding:.28rem .68rem;border-radius:18px;font-size:.77rem;white-space:nowrap;border:1px solid var(--bd);color:var(--tx2);flex-shrink:0;cursor:pointer;} 
+.mob-col-tab.active{background:var(--gold);color:#16130e;border-color:var(--gold);font-weight:600;} 
+.mob-col-add{width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1.5px solid var(--bd);color:var(--gold);font-size:1rem;flex-shrink:0;} 
+.mob-col-add:active{background:var(--card);} 
+.mob-s-wrap{padding:.4rem .75rem .35rem;flex-shrink:0;} 
+.mob-s-inp{width:100%;padding:.48rem .75rem;background:var(--card);border:1px solid var(--bd);border-radius:7px;color:var(--tx);font-size:.85rem;outline:none;} 
+.mob-s-inp:focus{border-color:var(--gold);} 
+.mob-s-inp::placeholder{color:var(--tx3);} 
+.mob-e-list{flex:1;overflow-y:auto;padding:.25rem .55rem calc(4.5rem + env(safe-area-inset-bottom,0px));} 
+/* MOBILE NAV */
+.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--sf);border-top:1px solid var(--bd);z-index:100;padding:.35rem 0 calc(.35rem + env(safe-area-inset-bottom,0px));} 
+.mob-nav-inner{display:flex;justify-content:space-around;} 
+.mob-nav-btn{display:flex;flex-direction:column;align-items:center;gap:.15rem;padding:.35rem .7rem;border-radius:7px;color:var(--tx3);font-size:.62rem;min-width:52px;} 
+.mob-nav-btn .nav-ic{font-size:1.25rem;} 
+.mob-nav-btn.active{color:var(--gold);} 
+.mob-nav-btn:active{background:var(--card);} 
+/* MORE SHEET */
+#more-sheet{display:none;position:fixed;inset:0;z-index:200;} 
+.more-overlay{position:absolute;inset:0;background:rgba(0,0,0,.5);} 
+.more-panel{position:absolute;bottom:0;left:0;right:0;background:var(--sf);border-radius:16px 16px 0 0;padding:1.2rem 1rem;padding-bottom:calc(1.2rem + env(safe-area-inset-bottom,0px));border-top:1px solid var(--bd);} 
+.more-title{text-align:center;font-size:.75rem;color:var(--tx3);margin-bottom:1rem;letter-spacing:.05em;} 
+.more-grid{display:flex;flex-direction:column;gap:.45rem;} 
+.more-item{padding:.82rem 1rem;background:var(--card);border-radius:10px;border:1px solid var(--bd);text-align:left;font-size:.9rem;color:var(--tx);width:100%;} 
+.more-item:active{background:var(--card2);} 
+.more-item.red{color:var(--red);border-color:rgba(224,96,96,.3);} 
+.more-item.gold{color:var(--gdim);} 
+.sync-section{background:var(--card);border-radius:10px;border:1px solid var(--bd);padding:.85rem 1rem;} 
+.sync-title{font-size:.82rem;color:var(--gold);font-weight:600;margin-bottom:.5rem;} 
+.sync-desc{font-size:.73rem;color:var(--tx3);margin-bottom:.6rem;line-height:1.5;} 
+.sync-inp{width:100%;padding:.52rem .8rem;background:var(--card2);border:1px solid var(--bd);border-radius:7px;color:var(--tx);font-size:.82rem;outline:none;margin-bottom:.5rem;display:block;} 
+.sync-inp:focus{border-color:var(--gold);} 
+.sync-btns{display:flex;gap:.4rem;} 
+.sync-btn{flex:1;padding:.55rem;border:none;border-radius:7px;font-size:.83rem;font-weight:600;cursor:pointer;} 
+.sync-btn.primary{background:var(--gold);color:#16130e;} 
+.sync-btn.ghost{background:var(--card2);color:var(--tx2);border:1px solid var(--bd);} 
+#sync-status{font-size:.73rem;color:var(--tx3);margin-top:.45rem;min-height:1em;} 
+.font-grid{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.4rem;} 
+.font-chip{padding:.28rem .6rem;border-radius:5px;font-size:.76rem;border:1px solid var(--bd);color:var(--tx2);cursor:pointer;} 
+.font-chip.active{background:var(--gold);color:#16130e;border-color:var(--gold);font-weight:600;} 
+/* IMG MODAL */
+#img-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:1000;flex-direction:column;align-items:center;justify-content:center;} 
+#img-modal.show{display:flex;} 
+#img-modal img{max-width:95vw;max-height:80vh;object-fit:contain;border-radius:8px;} 
+.img-modal-caption{font-size:.8rem;color:rgba(255,255,255,.6);margin-top:.8rem;cursor:pointer;} 
+/* ASIDE OVERLAY */
+#aside-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:49;} 
+#aside-ov.show{display:block;} 
+/* TOAST */
+#toast{position:fixed;bottom:5rem;left:50%;transform:translateX(-50%) translateY(10px);background:var(--card2);color:var(--tx);padding:.5rem 1.1rem;border-radius:8px;border:1px solid var(--bd2);font-size:.82rem;opacity:0;transition:all .25s;z-index:2000;pointer-events:none;white-space:nowrap;} 
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);} 
+/* ===== MOBILE BREAKPOINT ===== */
+@media(max-width:767px){header{height:calc(48px + env(safe-area-inset-top,0px));padding-left:.85rem;padding-right:.85rem;} .hdr-btn.d-only{display:none!important;} .mob-menu-btn{display:flex;} aside{position:fixed;top:calc(48px + env(safe-area-inset-top,0px));left:0;bottom:0;width:80vw;max-width:290px;z-index:50;transform:translateX(-100%);transition:transform .25s cubic-bezier(.4,0,.2,1);} aside.mob-open{transform:translateX(0);} main{display:flex;flex-direction:column;overflow:hidden;} .content{flex:1;min-height:0;} #panel-mob-list{display:flex;} .panel{padding:1rem 1rem calc(4.5rem + env(safe-area-inset-bottom,0px));} .mob-back-bar{display:flex;} .mob-nav{display:block;} .form-2col{grid-template-columns:1fr;} .link-2col{grid-template-columns:1fr;} .v-title{font-size:1.4rem;} .album-body{padding:.5rem .8rem 5rem;} .tl-body{padding:.5rem 1rem 5rem;} .e-item{padding:.82rem .75rem;} .v-img{width:88px;height:66px;} .f-editor{min-height:160px;}} @media(min-width:768px){.mob-back-bar,.mob-nav{display:none!important;} .mob-menu-btn{display:none!important;} #panel-mob-list{display:none!important;}}</style>
 <script>
 function genAppIcon(){
   try{
@@ -117,21 +304,32 @@ function genAppIcon(){
     c.quadraticCurveTo(0,S,0,S-r);c.lineTo(0,r);c.quadraticCurveTo(0,0,r,0);
     c.closePath();c.fillStyle='#16130e';c.fill();
     c.strokeStyle='rgba(232,188,92,0.35)';c.lineWidth=2.5;c.stroke();
+    // 金色书本
     c.fillStyle='#e8bc5c';
+    // 书本左页
     c.beginPath();c.moveTo(82,50);c.bezierCurveTo(58,53,44,63,44,90);
     c.bezierCurveTo(44,117,58,127,82,130);c.lineTo(82,50);c.fill();
+    // 书本右页
     c.beginPath();c.moveTo(98,50);c.bezierCurveTo(122,53,136,63,136,90);
     c.bezierCurveTo(136,117,122,127,98,130);c.lineTo(98,50);c.fill();
+    // 书脊
     c.fillStyle='#c9a840';c.fillRect(82,50,16,80);
+    // 装饰线（书页纹）
     c.strokeStyle='rgba(22,19,14,0.3)';c.lineWidth=1;
-    for(let y=65;y<=115;y+=10){c.beginPath();c.moveTo(50,y);c.lineTo(80,y);c.stroke();c.beginPath();c.moveTo(100,y);c.lineTo(130,y);c.stroke();}
-    c.beginPath();c.arc(90,90,70,0,Math.PI*2);c.strokeStyle='rgba(232,188,92,0.15)';c.lineWidth=1;c.stroke();
+    for(let y=65;y<=115;y+=10){
+      c.beginPath();c.moveTo(50,y);c.lineTo(80,y);c.stroke();
+      c.beginPath();c.moveTo(100,y);c.lineTo(130,y);c.stroke();
+    }
+    // 金色发光圆
+    c.beginPath();c.arc(90,90,70,0,Math.PI*2);
+    c.strokeStyle='rgba(232,188,92,0.15)';c.lineWidth=1;c.stroke();
     ['apple-touch-icon'].forEach(rel=>{let l=document.querySelector("link[rel='"+rel+"']");if(!l){l=document.createElement('link');l.rel=rel;document.head.appendChild(l);}l.href=cv.toDataURL('image/png');l.sizes='180x180';});
     let fav=document.querySelector("link[rel='icon']");if(!fav){fav=document.createElement('link');fav.rel='icon';document.head.appendChild(fav);}fav.href=cv.toDataURL('image/png');
   }catch(e){}
 }
 genAppIcon();
 </script>
+
 
 <script id="hb-store">var __HB__={"v":3,"accounts":[]};</script>
 
@@ -291,472 +489,4 @@ genAppIcon();
               <button class="tb-btn" onclick="fmt('italic')"><i>I</i></button>
               <button class="tb-btn" onclick="fmt('underline')"><u>U</u></button>
               <div class="tb-sep"></div>
-              <select class="tb-sel" id="size-sel" onchange="applySelSize(this.value)" title="选中文字字号">
-                <option value="">字号</option>
-                <option value="11px">11</option><option value="13px">13</option>
-                <option value="15px">15</option><option value="18px">18</option>
-                <option value="22px">22</option><option value="28px">28</option>
-              </select>
-              <div class="tb-sep"></div>
-              <select class="tb-sel" id="font-sel" onchange="applySelFont(this.value)" title="选中文字字体">
-                <option value="">字体</option>
-                <option value="'Songti SC','STSong','华文宋体',Georgia,serif">宋体</option>
-                <option value="'Kaiti SC','STKaiti','华文楷体','楷体',serif">楷体</option>
-                <option value="'STFangsong','华文仿宋','仿宋',serif">仿宋</option>
-                <option value="'PingFang SC','Microsoft YaHei',sans-serif">苹方/雅黑</option>
-                <option value="'Heiti SC','STHeiti','黑体',sans-serif">黑体</option>
-              </select>
-              <div class="tb-sep"></div>
-              <button class="tb-btn" onclick="fmt('removeFormat')" style="font-size:.68rem">清格式</button>
-            </div>
-            <div class="f-editor" id="f-body" contenteditable="true" data-placeholder="今天想说些什么？这里只有你一个人…"></div>
-            <div class="wc-bar"><span id="wc-write">0 字</span></div>
-          </div>
-        </div>
-        <div class="form-g">
-          <label class="f-lbl">默认字体（整篇）</label>
-          <select class="f-sel" id="f-font">
-            <option value="">跟随全局设置</option>
-            <option value="f-songti">宋体（Songti SC）</option>
-            <option value="f-kaiti">楷体（Kaiti SC）</option>
-            <option value="f-fangsong">仿宋</option>
-            <option value="f-yahei">苹方/微软雅黑</option>
-            <option value="f-heiti">黑体</option>
-            <option value="f-notoserif">华文宋体</option>
-            <option value="f-mashan">华文楷体（草书感）</option>
-          </select>
-        </div>
-        <div class="img-sec">
-          <label class="f-lbl">📷 图片（最多9张）</label>
-          <div class="img-drop" id="img-area" onclick="document.getElementById('img-file-inp').click()">
-            <span class="img-hint">＋ 点击添加图片</span>
-          </div>
-          <input type="file" id="img-file-inp" accept="image/*" multiple onchange="handleImgUpload(this)">
-        </div>
-        <div class="form-actions">
-          <button class="btn-save" onclick="saveEntry()">保 存</button>
-          <button class="btn-cancel" onclick="cancelWrite()">取消</button>
-        </div>
-      </div>
-
-      <!-- View panel -->
-      <div id="panel-view" class="panel">
-        <div class="mob-back-bar">
-          <button class="mob-back-btn" onclick="mobBackToList()">← 列表</button>
-        </div>
-        <div class="v-hdr">
-          <div class="v-meta">
-            <span class="v-date" id="v-date"></span>
-            <span class="v-tag" id="v-tag" style="display:none"></span>
-            <button class="star-btn" id="star-btn" onclick="toggleStar()" title="收藏"></button>
-            <span class="v-wc" id="v-wc"></span>
-          </div>
-          <h2 class="v-title" id="v-title"></h2>
-        </div>
-        <div class="link-card" id="v-link-card" style="display:none">
-          <span class="link-icon">📰</span>
-          <div class="link-info">
-            <div class="link-title-t" id="v-link-title"></div>
-            <div class="link-url-t" id="v-link-url"></div>
-          </div>
-          <div class="link-btns">
-            <a class="link-btn" id="v-link-open" href="#" target="_blank" rel="noopener">打开↗</a>
-            <button class="link-btn" onclick="copyLink()">复制</button>
-          </div>
-        </div>
-        <div class="video-wrap" id="v-video-wrap" style="display:none">
-          <iframe id="v-video-iframe" allowfullscreen></iframe>
-        </div>
-        <div class="v-imgs" id="v-imgs"></div>
-        <div class="v-content" id="v-content"></div>
-        <div class="v-actions">
-          <button class="btn-edit" onclick="openEdit()">编辑</button>
-          <button class="btn-del" onclick="deleteEntry()">删除</button>
-        </div>
-      </div>
-
-      <!-- Album panel -->
-      <div id="panel-album" class="panel" style="padding:0;flex-direction:column;">
-        <div class="album-hdr">
-          <button class="mob-back-btn" onclick="showPanel('panel-empty')" style="display:flex">← 返回</button>
-          <h2>相 册</h2>
-        </div>
-        <div class="album-body" id="album-body"></div>
-      </div>
-
-      <!-- Timeline panel -->
-      <div id="panel-timeline" class="panel" style="padding:0;flex-direction:column;">
-        <div class="tl-hdr">
-          <button class="mob-back-btn" onclick="showPanel('panel-empty')" style="display:flex">← 返回</button>
-          <h2>时 间 轴</h2>
-        </div>
-        <div class="tl-body" id="tl-body"></div>
-      </div>
-    </div>
-  </main>
-
-  <!-- Mobile bottom nav -->
-  <nav class="mob-nav">
-    <div class="mob-nav-inner">
-      <button class="mob-nav-btn active" id="nav-list" onclick="mobGoList()">
-        <span class="nav-ic">📋</span><span>列表</span>
-      </button>
-      <button class="mob-nav-btn" id="nav-write" onclick="openWrite()">
-        <span class="nav-ic">✏️</span><span>新建</span>
-      </button>
-      <button class="mob-nav-btn" id="nav-album" onclick="showAlbum()">
-        <span class="nav-ic">🖼</span><span>相册</span>
-      </button>
-      <button class="mob-nav-btn" id="nav-more" onclick="showMore()">
-        <span class="nav-ic">⚙️</span><span>更多</span>
-      </button>
-    </div>
-  </nav>
-</div>
-
-<!-- More Sheet -->
-<div id="more-sheet" onclick="if(event.target===this||event.target.classList.contains('more-overlay'))hideMore()">
-  <div class="more-overlay"></div>
-  <div class="more-panel">
-    <div class="more-title">更多操作</div>
-    <div class="more-grid">
-      <button class="more-item" onclick="showTimeline();hideMore()">📅 时间轴</button>
-      <button class="more-item" onclick="showAlbum();hideMore()">🖼 相册</button>
-      <div style="background:var(--card);border-radius:10px;border:1px solid var(--bd);padding:.85rem 1rem;">
-        <div style="font-size:.82rem;color:var(--gold);font-weight:600;margin-bottom:.5rem">字体切换（全局默认）</div>
-        <div class="font-grid" id="more-font-grid"></div>
-      </div>
-      <div class="sync-section">
-        <div class="sync-title">🔄 双端同步</div>
-        <div class="sync-desc">连接 GitHub Token（需 gist 权限），手机和电脑日记自动同步。</div>
-        <input class="sync-inp" type="password" id="sync-token-inp" placeholder="粘贴 GitHub Token…">
-        <div class="sync-btns">
-          <button class="sync-btn primary" onclick="setupSync()">连接</button>
-          <button class="sync-btn ghost" onclick="syncFromGist(true)">立即同步</button>
-        </div>
-        <div id="sync-status"></div>
-      </div>
-      <button class="more-item" onclick="saveHtmlFile();hideMore()">💾 保存文件</button>
-      <button class="more-item" onclick="doExport();hideMore()">📤 导出备份</button>
-      <button class="more-item" onclick="document.getElementById('imp-main').click()">📥 导入备份</button>
-      <input type="file" id="imp-main" accept=".json" style="display:none" onchange="doImport(this)">
-      <button class="more-item red" onclick="doClearAll();hideMore()">🗑 清空所有日记</button>
-      <button class="more-item gold" onclick="doSwitchAcc();hideMore()">👤 切换账号</button>
-    </div>
-  </div>
-</div>
-
-<div id="img-modal" onclick="closeImgModal()">
-  <img id="img-modal-img" src="" alt="">
-  <div class="img-modal-caption" id="img-modal-caption"></div>
-</div>
-<div id="toast"></div>
-<script>
-/* ===== CONSTANTS ===== */
-const COL_COLORS=['#e8bc5c','#5aafdf','#df5a7a','#5adf9a','#a07adf','#df8c5a','#5adfc0','#dfcf5a'];
-const AVATARS=['🐉','🦁','🌙','🌸','⭐','🦋','🌊','🔥','🌿','🎯'];
-const FONTS=[
-  {id:'f-songti',label:'宋体'},
-  {id:'f-kaiti',label:'楷体'},
-  {id:'f-fangsong',label:'仿宋'},
-  {id:'f-yahei',label:'苹方/雅黑'},
-  {id:'f-heiti',label:'黑体'},
-  {id:'f-notoserif',label:'华文宋体'},
-  {id:'f-mashan',label:'华文楷体'},
-];
-const GIST_FILE='hongbo_diary_sync.json';
-const GIST_DESC='hongbo-diary-sync-v3';
-
-/* ===== STATE ===== */
-let CKEY=null, curAccId=null, selAccId=null;
-let data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:null};
-let st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:''};
-let syncToken=null, syncGistId=null;
-
-/* ===== STORE (embedded HTML) ===== */
-function storeGet(){
-  try{const ls=localStorage.getItem('hb_v3');if(ls){const p=JSON.parse(ls);if(p&&p.v===3)return p;}}catch{}
-  return window.__HB__||{v:3,accounts:[]};
-}
-function storeSet(hb){
-  window.__HB__=hb;
-  try{document.getElementById('hb-store').textContent='var __HB__='+JSON.stringify(hb)+';';}catch{}
-  try{localStorage.setItem('hb_v3',JSON.stringify(hb));}catch{}
-}
-function storeGetAcc(id){return storeGet().accounts.find(a=>a.id===id)||null;}
-function storeUpdateAcc(id,patch){
-  const hb=storeGet();
-  const idx=hb.accounts.findIndex(a=>a.id===id);
-  if(idx<0)return;
-  hb.accounts[idx]={...hb.accounts[idx],...patch};
-  storeSet(hb);
-}
-function storeAddAcc(acc){const hb=storeGet();hb.accounts.push(acc);storeSet(hb);} 
-function storeRemoveAcc(id){const hb=storeGet();hb.accounts=hb.accounts.filter(a=>a.id!==id);storeSet(hb);} 
-
-/* ===== SAVE HTML FILE ===== */
-function saveHtmlFile(){
-  const blob=new Blob([document.documentElement.outerHTML],{type:'text/html;charset=utf-8'});
-  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:'宏博.html'});
-  a.click();URL.revokeObjectURL(a.href);
-  showToast('✅ 文件已保存');
-}
-
-/* ===== CRYPTO ===== */
-async function deriveKey(pw,salt){
-  const km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),{name:'PBKDF2'},false,['deriveKey']);
-  return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:100000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
-}
-async function aesEnc(key,str){
-  const iv=crypto.getRandomValues(new Uint8Array(12));
-  const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(str));
-  const out=new Uint8Array(12+ct.byteLength);out.set(iv);out.set(new Uint8Array(ct),12);
-  return btoa(String.fromCharCode(...out));
-}
-async function aesDec(key,b64){
-  const d=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));
-  const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:d.slice(0,12)},key,d.slice(12));
-  return new TextDecoder().decode(pt);
-}
-async function saveAccData(){
-  if(!CKEY||!curAccId)return;
-  const enc=await aesEnc(CKEY,JSON.stringify(data));
-  storeUpdateAcc(curAccId,{data:enc,updated:Date.now()});
-}
-
-/* ===== REMEMBER PASSWORD ===== */
-async function getDeviceKey(){
-  let dkB64=localStorage.getItem('hb_dk');
-  if(!dkB64){
-    const raw=await crypto.subtle.generateKey({name:'AES-GCM',length:256},true,['encrypt','decrypt']);
-    const exp=await crypto.subtle.exportKey('raw',raw);
-    dkB64=btoa(String.fromCharCode(...new Uint8Array(exp)));
-    localStorage.setItem('hb_dk',dkB64);
-  }
-  const kd=Uint8Array.from(atob(dkB64),c=>c.charCodeAt(0));
-  return crypto.subtle.importKey('raw',kd,{name:'AES-GCM'},false,['encrypt','decrypt']);
-}
-async function rememberPw(accId,pw){
-  const key=await getDeviceKey();
-  const iv=crypto.getRandomValues(new Uint8Array(12));
-  const payload=JSON.stringify({pw,accId,expires:Date.now()+30*24*60*60*1000});
-  const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(payload));
-  const out=new Uint8Array(12+ct.byteLength);out.set(iv);out.set(new Uint8Array(ct),12);
-  localStorage.setItem('hb_rem_'+accId,btoa(String.fromCharCode(...out)));
-}
-async function checkRemember(accId){
-  const stored=localStorage.getItem('hb_rem_'+accId);
-  if(!stored)return null;
-  try{
-    const key=await getDeviceKey();
-    const d=Uint8Array.from(atob(stored),c=>c.charCodeAt(0));
-    const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:d.slice(0,12)},key,d.slice(12));
-    const obj=JSON.parse(new TextDecoder().decode(pt));
-    if(obj.accId!==accId||obj.expires<Date.now()){localStorage.removeItem('hb_rem_'+accId);return null;}
-    return obj.pw;
-  }catch{return null;}
-}
-function forgetPw(accId){localStorage.removeItem('hb_rem_'+accId);} 
-
-/* ===== INIT ===== */
-window.onload=async()=>{
-  const hb=storeGet();window.__HB__=hb;
-  // apply saved theme
-  const savedTheme=localStorage.getItem('hb_theme')||'dark';
-  if(savedTheme==='light')document.body.classList.add('light');
-  updateThemeBtn();
-  await showAccList();
-  document.getElementById('pw-inp').addEventListener('keydown',e=>{if(e.key==='Enter')handleLogin();});
-  document.getElementById('new-pw2').addEventListener('keydown',e=>{if(e.key==='Enter')handleNewAccount();});
-  document.getElementById('f-body').addEventListener('input',updateWordCount);
-  document.getElementById('f-body').addEventListener('paste',e=>{
-    e.preventDefault();
-    const text=(e.clipboardData||window.clipboardData).getData('text/plain');
-    document.execCommand('insertText',false,text);
-  });
-};
-
-/* ===== THEME ===== */
-function toggleTheme(){
-  const isLight=document.body.classList.toggle('light');
-  localStorage.setItem('hb_theme',isLight?'light':'dark');
-  document.getElementById('theme-meta').content=isLight?'#f0ebe0':'#16130e';
-  updateThemeBtn();
-  if(data.settings){data.settings.theme=isLight?'light':'dark';saveAccData();}
-}
-function updateThemeBtn(){
-  const btn=document.getElementById('theme-btn');
-  if(btn)btn.textContent=document.body.classList.contains('light')?'🌙':'☀️';
-}
-
-/* ===== AUTH SCREENS ===== */
-function hideAllScreens(){
-  ['sc-list','sc-login','sc-newaccount'].forEach(id=>document.getElementById(id).style.display='none');
-  document.getElementById('app').style.display='none';
-}
-async function showAccList(skipAuto=false){
-  hideAllScreens();
-  const hb=storeGet();
-  const accs=hb.accounts||[];
-  document.getElementById('list-sub').textContent=accs.length?'选择账号登录':'还没有账号，请新建一个';
-  // check auto-login（切换账号时跳过）
-  if(!skipAuto){
-    for(const acc of accs){
-      const savedPw=await checkRemember(acc.id);
-      if(savedPw){
-        selAccId=acc.id;
-        await doLogin(acc.id,savedPw,false);
-        return;
-      }
-    }
-  }
-  document.getElementById('acc-list').innerHTML=accs.map((acc,i)=>`
-    <div class="acc-card" onclick="showLogin('${acc.id}')">
-      <div class="acc-av" style="background:${COL_COLORS[i%COL_COLORS.length]}">${acc.avatar||'📖'}</div>
-      <div><div class="acc-name">${esc(acc.name)}</div><div class="acc-hint">点击登录</div></div>
-      <button class="acc-del" onclick="event.stopPropagation();deleteAcc('${acc.id}')">🗑</button>
-    </div>`).join('');
-  document.getElementById('sc-list').style.display='flex';
-}
-function showLogin(accId){
-  selAccId=accId;
-  const acc=storeGetAcc(accId);if(!acc)return;
-  document.getElementById('login-av').textContent=acc.avatar||'📖';
-  document.getElementById('login-name').textContent=acc.name;
-  document.getElementById('pw-inp').value='';
-  document.getElementById('login-err').textContent='';
-  document.getElementById('login-btn').textContent='登 录';
-  document.getElementById('login-btn').disabled=false;
-  hideAllScreens();
-  document.getElementById('sc-login').style.display='flex';
-  setTimeout(()=>document.getElementById('pw-inp').focus(),80);
-}
-function showNewAcc(){
-  ['new-name','new-pw','new-pw2'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('newaccount-err').textContent='';
-  document.getElementById('newaccount-btn').textContent='创 建 账 号';
-  document.getElementById('newaccount-btn').disabled=false;
-  hideAllScreens();
-  document.getElementById('sc-newaccount').style.display='flex';
-  setTimeout(()=>document.getElementById('new-name').focus(),80);
-}
-function togglePw(inputId,eyeId){
-  const i=document.getElementById(inputId),e=document.getElementById(eyeId);
-  if(i.type==='password'){i.type='text';e.textContent='隐藏';}
-  else{i.type='password';e.textContent='显示';}
-}
-async function handleLogin(){
-  const pw=document.getElementById('pw-inp').value;
-  const errEl=document.getElementById('login-err');
-  errEl.textContent='';
-  if(!pw){errEl.textContent='请输入密码';return;}
-  const btn=document.getElementById('login-btn');
-  btn.textContent='验证中…';btn.disabled=true;
-  const remember=document.getElementById('remember-cb').checked;
-  const ok=await doLogin(selAccId,pw,remember);
-  if(!ok){
-    errEl.textContent='密码错误，请重试';
-    document.getElementById('pw-inp').value='';
-    setTimeout(()=>document.getElementById('pw-inp').focus(),50);
-    btn.textContent='登 录';btn.disabled=false;
-  }
-}
-async function doLogin(accId,pw,remember){
-  const acc=storeGetAcc(accId);
-  if(!acc||!acc.salt||!acc.ver)return false;
-  try{
-    const salt=Uint8Array.from(atob(acc.salt),c=>c.charCodeAt(0));
-    const key=await deriveKey(pw,salt);
-    const ver=await aesDec(key,acc.ver);
-    if(ver!=='HONGBO_OK')return false;
-    CKEY=key;curAccId=accId;
-    if(acc.data){const plain=await aesDec(CKEY,acc.data);data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:null,...JSON.parse(plain)};}
-    else data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:null};
-    if(remember)await rememberPw(accId,pw);
-    enterApp();
-    return true;
-  }catch{CKEY=null;curAccId=null;return false;}
-}
-async function handleNewAccount(){
-  const name=document.getElementById('new-name').value.trim();
-  const pw=document.getElementById('new-pw').value;
-  const pw2=document.getElementById('new-pw2').value;
-  const errEl=document.getElementById('newaccount-err');
-  errEl.textContent='';
-  if(name.length<2){errEl.textContent='账号名至少2个字';return;}
-  if(pw.length<4){errEl.textContent='密码至少需要4位';return;}
-  if(pw!==pw2){errEl.textContent='两次密码不一致';return;}
-  const hb=storeGet();
-  if(hb.accounts.find(a=>a.name===name)){errEl.textContent='账号名已存在';return;}
-  const btn=document.getElementById('newaccount-btn');
-  btn.textContent='创建中…';btn.disabled=true;
-  try{
-    const id=Date.now().toString(36)+Math.random().toString(36).slice(2,5);
-    const salt=crypto.getRandomValues(new Uint8Array(16));
-    const saltB64=btoa(String.fromCharCode(...salt));
-    const key=await deriveKey(pw,salt);
-    const ver=await aesEnc(key,'HONGBO_OK');
-    const avatarIdx=hb.accounts.length%AVATARS.length;
-    storeAddAcc({id,name,avatar:AVATARS[avatarIdx],salt:saltB64,ver,data:null});
-    CKEY=key;curAccId=id;
-    data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:null};
-    await saveAccData();
-    await rememberPw(id,pw);
-    enterApp();
-  }catch{errEl.textContent='创建失败';btn.textContent='创 建 账 号';btn.disabled=false;}
-}
-function deleteAcc(accId){
-  const acc=storeGetAcc(accId);if(!acc)return;
-  if(!confirm('删除账号「'+acc.name+'」？所有日记将永久消失！'))return;
-  storeRemoveAcc(accId);forgetPw(accId);showAccList();
-}
-function enterApp(){
-  hideAllScreens();
-  document.getElementById('app').style.display='flex';
-  const hb=storeGet();
-  const accs=hb.accounts||[];
-  const acc=accs.find(a=>a.id===curAccId);
-  const idx=accs.indexOf(acc);
-  if(acc){
-    document.getElementById('hdr-accname').textContent=acc.name;
-    document.getElementById('hdr-dot').style.background=COL_COLORS[idx%COL_COLORS.length];
-  }
-  // apply theme from data
-  const theme=data.settings?.theme||'dark';
-  if(theme==='light'&&!document.body.classList.contains('light'))document.body.classList.add('light');
-  else if(theme==='dark'&&document.body.classList.contains('light'))document.body.classList.remove('light');
-  updateThemeBtn();
-  // apply default font
-  applyGlobalFont(data.settings?.defaultFont||'');
-  st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:''};
-  document.getElementById('s-inp').value='';
-  document.getElementById('mob-s-inp').value='';
-  renderAll();
-  // load sync config
-  if(data.syncConfig){syncToken=data.syncConfig.token;syncGistId=data.syncConfig.gistId;}
-  if(document.getElementById('sync-token-inp'))document.getElementById('sync-token-inp').value=syncToken||'';
-  if(syncToken&&syncGistId)syncFromGist(false);
-  renderMoreFonts();
-  isMob()?showMobPanel('list'):showPanel('panel-empty');
-}
-function doSwitchAcc(){
-  CKEY=null;curAccId=null;
-  data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:null};
-  st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:''};
-  syncToken=null;syncGistId=null;
-  showAccList(true);
-}
-</script>
-<script>
-/* ===== MOBILE HELPERS ===== */
-const isMob=()=>window.innerWidth<768;
-function toggleSidebar(){
-  const as=document.getElementById('sidebar');
-  if(as.classList.contains('mob-open')){as.classList.remove('mob-open');document.getElementById('aside-ov').classList.remove('show');}
-  else{as.classList.add('mob-open');document.getElementById('aside-ov').classList.add('show');}
-}
-
-/* 其余脚本省略（未改动） */
-</script>
-</body>
-</html>
+              <select class="tb-sel" id="size-sel" onchange="applySelSize(this.value" title="选中文字字号">
