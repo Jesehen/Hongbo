@@ -1,8 +1,10 @@
-const CACHE = 'hongbo-v2';
-const CORE = ['/'];
+const CACHE = 'hongbo-v3';
+const CORE = ['./', './index.html', './sw.js'];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)));
+  e.waitUntil(
+    caches.open(CACHE).then(c => c.addAll(CORE).catch(() => Promise.resolve()))
+  );
   self.skipWaiting();
 });
 
@@ -16,32 +18,34 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // Only handle same-origin GET requests
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
   if (url.origin !== self.location.origin) return;
 
-  // Network-first for HTML and critical resources
-  if (url.pathname === '/' || url.pathname.endsWith('.html')) {
+  const req = e.request;
+  const isHtml = req.mode === 'navigate' || url.pathname.endsWith('.html');
+
+  if (isHtml) {
     e.respondWith(
-      fetch(e.request).then(response => {
+      fetch(req).then(response => {
         if (response && response.status === 200) {
           const clone = response.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
+          caches.open(CACHE).then(c => c.put(req, clone));
         }
         return response;
-      }).catch(() => caches.match(e.request))
+      }).catch(async () => {
+        return (await caches.match(req)) || caches.match('./index.html');
+      })
     );
     return;
   }
 
-  // Cache-first for other resources
   e.respondWith(
-    caches.match(e.request).then(cached => {
-      const fetchPromise = fetch(e.request).then(response => {
+    caches.match(req).then(cached => {
+      const fetchPromise = fetch(req).then(response => {
         if (response && response.status === 200) {
           const clone = response.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
+          caches.open(CACHE).then(c => c.put(req, clone));
         }
         return response;
       }).catch(() => cached);
