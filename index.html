@@ -624,9 +624,11 @@ genAppIcon();
           <h2>时间轴</h2>
         </div>
         <div class="tl-filter">
-          <span style="font-size:.75rem;color:var(--tx3)">筛选：晚于</span>
+          <span style="font-size:.75rem;color:var(--tx3)">晚于</span>
           <input type="date" id="tl-after" onchange="setTimelineAfter(this.value)">
-          <button onclick="clearTimelineAfter()">清除</button>
+          <span style="font-size:.75rem;color:var(--tx3)">早于</span>
+          <input type="date" id="tl-before" onchange="setTimelineBefore(this.value)">
+          <button onclick="clearTimelineFilter()">清除</button>
         </div>
         <div class="tl-body" id="tl-body"></div>
       </div>
@@ -716,7 +718,7 @@ const HB_BAK_KEYS=['hb_v3_bak1','hb_v3_bak2'];
 
 let CKEY=null, curAccId=null, selAccId=null;
 let data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:null};
-let st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:'',tlAfter:''};
+let st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:'',tlAfter:'',tlBefore:''};
 let syncToken=null, syncGistId=null;
 
 let lastEditorRange=null;
@@ -1084,7 +1086,7 @@ function enterApp(){
   else if(theme==='dark'&&document.body.classList.contains('light'))document.body.classList.remove('light');
   updateThemeBtn();
   applyGlobalFont(data.settings?.defaultFont||'');
-  st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:'',tlAfter:'',albumBefore:'',albumAfter:''};
+  st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:'',tlAfter:'',tlBefore:'',albumBefore:'',albumAfter:''};
   document.getElementById('s-inp').value='';
   document.getElementById('mob-s-inp').value='';
   renderAll();
@@ -1111,7 +1113,7 @@ function enterApp(){
 function doSwitchAcc(){
   CKEY=null;curAccId=null;
   data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:null};
-  st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:'',tlAfter:'',albumBefore:'',albumAfter:''};
+  st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:'',tlAfter:'',tlBefore:'',albumBefore:'',albumAfter:''};
   syncToken=null;syncGistId=null;
   showAccList(true);
 }
@@ -1626,19 +1628,30 @@ async function renderAlbum(){
 }
 
 function showTimeline(){
-  const inp=document.getElementById('tl-after');if(inp)inp.value=st.tlAfter||'';
+  const inpA=document.getElementById('tl-after');if(inpA)inpA.value=st.tlAfter||'';
+  const inpB=document.getElementById('tl-before');if(inpB)inpB.value=st.tlBefore||'';
   renderTimeline();
   if(isMob()){showMobPanel('timeline');setNavActive('more');}
   else showPanel('panel-timeline');
 }
 function setTimelineAfter(v){st.tlAfter=v||'';renderTimeline();}
-function clearTimelineAfter(){st.tlAfter='';const inp=document.getElementById('tl-after');if(inp)inp.value='';renderTimeline();}
+function setTimelineBefore(v){st.tlBefore=v||'';renderTimeline();}
+function clearTimelineFilter(){
+  st.tlAfter='';st.tlBefore='';
+  const inpA=document.getElementById('tl-after');if(inpA)inpA.value='';
+  const inpB=document.getElementById('tl-before');if(inpB)inpB.value='';
+  renderTimeline();
+}
 function renderTimeline(){
   const body=document.getElementById('tl-body');
   let entries=data.entries||[];
   if(st.tlAfter){
     const start=new Date(st.tlAfter+'T00:00:00');
     entries=entries.filter(e=>new Date(e.date)>=start);
+  }
+  if(st.tlBefore){
+    const end=new Date(st.tlBefore+'T23:59:59.999');
+    entries=entries.filter(e=>new Date(e.date)<=end);
   }
   if(!entries.length){body.innerHTML='<div class="tl-empty">没有符合条件的日记</div>';return;}
   const years={};
