@@ -1,4 +1,4 @@
-const CACHE = 'hongbo-v3';
+const CACHE = 'hongbo-v4';
 const CORE = ['./', './index.html', './sw.js'];
 
 self.addEventListener('install', e => {
