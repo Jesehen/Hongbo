@@ -495,7 +495,7 @@ genAppIcon();
         <div class="form-2col">
           <div class="form-g" style="margin-bottom:0">
             <label class="f-lbl">标题（可选）</label>
-            <input class="f-inp" type="text" id="f-title" placeholder="大人请起个标题…">
+            <input class="f-inp" type="text" id="f-title" placeholder="给这篇起个标题…">
           </div>
           <div class="form-g" style="margin-bottom:0">
             <label class="f-lbl">归属专栏</label>
@@ -603,7 +603,7 @@ genAppIcon();
       <div id="panel-album" class="panel" style="padding:0;flex-direction:column;">
         <div class="album-hdr">
           <button class="mob-back-btn" onclick="showPanel('panel-empty')" style="display:flex">← 返回</button>
-          <h2>相 册</h2>
+          <h2>相册</h2>
         </div>
         <div class="album-body" id="album-body"></div>
       </div>
@@ -611,7 +611,7 @@ genAppIcon();
       <div id="panel-timeline" class="panel" style="padding:0;flex-direction:column;">
         <div class="tl-hdr">
           <button class="mob-back-btn" onclick="showPanel('panel-empty')" style="display:flex">← 返回</button>
-          <h2>时 间 轴</h2>
+          <h2>时间轴</h2>
         </div>
         <div class="tl-filter">
           <span style="font-size:.75rem;color:var(--tx3)">筛选：晚于</span>
@@ -1067,6 +1067,14 @@ function enterApp(){
   refreshStorageStats();
   renderMoreFonts();
   isMob()?showMobPanel('list'):showPanel('panel-empty');
+  // 黑屏兜底：100ms后检查是否有面板可见，没有就强制显示
+  setTimeout(()=>{
+    const app=document.getElementById('app');
+    if(!app||app.style.display==='none')return;
+    const panels=['panel-empty','panel-write','panel-view','panel-album','panel-timeline'];
+    const anyVisible=panels.some(id=>{const el=document.getElementById(id);return el&&el.style.display!=='none';});
+    if(!anyVisible){showPanel('panel-empty');}
+  },100);
 }
 function doSwitchAcc(){
   CKEY=null;curAccId=null;
@@ -1687,7 +1695,7 @@ async function syncToGist(){
     if(!acc?.data)return;
     const encData=await readAccCipher(acc.data);
     if(!encData)return;
-    const acc2=storeGetAcc(curAccId);const payload=JSON.stringify({encData,salt:acc2.salt,ver:acc2.ver,updated:Date.now()});
+    const payload=JSON.stringify({encData,salt:acc.salt,ver:acc.ver,updated:Date.now()});
     await gistApi('PATCH','/gists/'+syncGistId,{
       files:{[GIST_FILE]:{content:payload},[GIST_BAK_FILE]:{content:payload}}
     });
