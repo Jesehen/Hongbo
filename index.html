@@ -554,19 +554,6 @@ genAppIcon();
             <div class="wc-bar"><span id="wc-write">0 字</span></div>
           </div>
         </div>
-        <div class="form-g">
-          <label class="f-lbl">默认字体（整篇）</label>
-          <select class="f-sel" id="f-font" onchange="applyEditorFont(this.value)">
-            <option value="">跟随全局设置</option>
-            <option value="f-songti">宋体（Songti SC）</option>
-            <option value="f-kaiti">楷体（Kaiti SC）</option>
-            <option value="f-fangsong">仿宋</option>
-            <option value="f-yahei">苹方/微软雅黑</option>
-            <option value="f-heiti">黑体</option>
-            <option value="f-notoserif">华文宋体</option>
-            <option value="f-mashan">华文楷体（草书感）</option>
-          </select>
-        </div>
         <div class="img-sec">
           <label class="f-lbl">📷 图片（最多9张）</label>
           <div class="img-drop" id="img-area" onclick="document.getElementById('img-file-inp').click()">
@@ -1342,7 +1329,6 @@ function openWrite(){
   document.getElementById('f-url').value='';
   document.getElementById('f-linktitle').value='';
   document.getElementById('f-body').innerHTML='';
-  document.getElementById('f-font').value='';
   applyEditorFont('');
   document.getElementById('wc-write').textContent='0 字';
   document.getElementById('write-lbl').textContent='📝 新的记录';
@@ -1363,7 +1349,6 @@ function openEdit(){
   document.getElementById('f-url').value=e.url||'';
   document.getElementById('f-linktitle').value=e.linkTitle||'';
   document.getElementById('f-body').innerHTML=e.bodyHtml||(e.body?esc(e.body).replace(/\n/g,'<br>'):'');
-  document.getElementById('f-font').value=e.fontFamily||'';
   applyEditorFont(e.fontFamily||'');
   updateWordCount();
   document.getElementById('write-lbl').textContent='✏️ 编辑记录';
@@ -1396,7 +1381,7 @@ async function saveEntry(){
     colId:document.getElementById('f-col').value||null,
     url:document.getElementById('f-url').value.trim(),
     linkTitle:document.getElementById('f-linktitle').value.trim(),
-    fontFamily:document.getElementById('f-font').value||'',
+    fontFamily:'',
     images:storedImgs,
     starred:st.editId?((data.entries||[]).find(x=>x.id===st.editId)||{}).starred||false:false,
   };
