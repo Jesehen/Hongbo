@@ -31,7 +31,8 @@ html,body{height:100%;-webkit-tap-highlight-color:transparent;}
 body{background:var(--bg);color:var(--tx);font-family:'Microsoft YaHei','PingFang SC',system-ui,sans-serif;height:100%;overflow:hidden;transition:background .25s,color .25s;}
 ::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
 button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;-webkit-appearance:none;}
-input,textarea,select{font-family:inherit;-webkit-appearance:none;}
+input:not([type=checkbox]):not([type=radio]),textarea,select{font-family:inherit;-webkit-appearance:none;}
+input[type=checkbox],input[type=radio]{-webkit-appearance:auto;appearance:auto;}
 
 .f-songti{font-family:'Songti SC','STSong','华文宋体','宋体',Georgia,serif!important;}
 .f-heiti{font-family:'Heiti SC','STHeiti','黑体','PingFang SC',sans-serif!important;}
@@ -100,24 +101,26 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 1
 #app{display:flex;flex-direction:column;height:100%;}
 main{display:flex;flex:1;overflow:hidden;}
 
-aside{width:260px;flex-shrink:0;background:var(--sf);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden;}
-.col-hdr{display:flex;align-items:center;justify-content:space-between;padding:.65rem .75rem .3rem;}
-.col-hdr-t{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);}
-.col-add{width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:5px;color:var(--gold);font-size:1.15rem;}
-.col-add:active{background:var(--card);}
-.col-new-form{display:flex;gap:.35rem;margin:0 .75rem .4rem;align-items:center;}
+aside{width:270px;flex-shrink:0;background:var(--sf);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden;}
+.col-hdr{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1rem .5rem;}
+.col-hdr-t{font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);font-weight:600;}
+.col-add{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:7px;color:var(--gold);font-size:1.25rem;background:var(--card);border:1px solid var(--bd);}
+.col-add:active{background:var(--card2);}
+.col-new-form{display:flex;gap:.4rem;margin:0 .85rem .55rem;align-items:center;}
 .col-new-form.show{display:flex;}
-.col-inp{flex:1;padding:.38rem .6rem;background:var(--card);border:1px solid var(--bd);border-radius:6px;color:var(--tx);font-size:.8rem;outline:none;}
+.col-inp{flex:1;padding:.44rem .7rem;background:var(--card);border:1px solid var(--bd);border-radius:8px;color:var(--tx);font-size:.85rem;outline:none;}
 .col-inp:focus{border-color:var(--gold);}
-.col-ok{padding:.38rem .65rem;background:var(--gold);color:#16130e;border-radius:6px;font-size:.82rem;font-weight:600;}
-.col-list{display:flex;flex-direction:column;gap:2px;padding:0 .5rem .4rem;}
-.col-item{display:flex;align-items:center;gap:.5rem;padding:.42rem .55rem;border-radius:7px;cursor:pointer;border:1px solid transparent;}
-.col-item:active,.col-item.active{background:var(--card);border-color:var(--bd);}
-.col-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-.col-name{flex:1;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tx);}
-.col-cnt{font-size:.67rem;color:var(--tx3);}
-.col-del{opacity:0;font-size:.7rem;color:var(--red);padding:0 3px;transition:opacity .15s;}
+.col-ok{padding:.44rem .75rem;background:var(--gold);color:#16130e;border-radius:8px;font-size:.88rem;font-weight:600;}
+.col-list{display:flex;flex-direction:column;gap:4px;padding:.1rem .7rem .7rem;}
+.col-item{display:flex;align-items:center;gap:.7rem;padding:.72rem .8rem;border-radius:11px;cursor:pointer;border:1.5px solid transparent;transition:background .15s,border-color .15s;}
+.col-item:active{background:var(--card2);}
+.col-item.active{background:var(--card);border-color:var(--bd2);}
+.col-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;}
+.col-name{flex:1;font-size:.92rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tx);}
+.col-cnt{font-size:.72rem;color:var(--tx3);background:var(--card2);padding:.12rem .52rem;border-radius:12px;min-width:1.6em;text-align:center;flex-shrink:0;}
+.col-del{opacity:0;font-size:.72rem;color:var(--red);padding:0 4px;transition:opacity .15s;}
 .col-item:hover .col-del{opacity:1;}
+@media(max-width:767px){.col-del{opacity:.45!important;}}
 .new-btn-desk{margin:.4rem .75rem .3rem;padding:.52rem;background:var(--gold);color:#16130e;font-weight:700;font-size:.85rem;border-radius:8px;text-align:center;display:block;flex-shrink:0;}
 .new-btn-desk:active{background:var(--gdim);}
 .s-wrap{padding:.35rem .75rem .35rem;flex-shrink:0;}
@@ -321,6 +324,14 @@ body.light .wc-bar{background:#fff;}
   .e-item{padding:.82rem .75rem;}
   .v-img{width:88px;height:66px;}
   .f-editor{min-height:160px;}
+  #sidebar .new-btn-desk,#sidebar .s-wrap,#sidebar .e-list{display:none!important;}
+  .col-item{padding:.95rem .85rem;}
+  .col-name{font-size:1.02rem;}
+  .col-dot{width:13px;height:13px;}
+  .col-cnt{font-size:.8rem;padding:.15rem .6rem;}
+  .col-hdr{padding:1.3rem 1rem .65rem;}
+  .col-hdr-t{font-size:.8rem;}
+  .col-add{width:32px;height:32px;font-size:1.35rem;}
 }
 @media(min-width:768px){
   .mob-back-bar,.mob-nav{display:none!important;}
@@ -608,9 +619,11 @@ genAppIcon();
           <h2>相 册</h2>
         </div>
         <div class="album-filter">
-          <span style="font-size:.75rem;color:var(--tx3)">筛选：早于/等于</span>
+          <span style="font-size:.75rem;color:var(--tx3)">晚于</span>
+          <input type="date" id="album-after" onchange="setAlbumAfter(this.value)">
+          <span style="font-size:.75rem;color:var(--tx3)">早于</span>
           <input type="date" id="album-before" onchange="setAlbumBefore(this.value)">
-          <button onclick="clearAlbumBefore()">清除</button>
+          <button onclick="clearAlbumFilter()">清除</button>
         </div>
         <div class="album-body" id="album-body"></div>
       </div>
@@ -621,9 +634,11 @@ genAppIcon();
           <h2>时间轴</h2>
         </div>
         <div class="tl-filter">
-          <span style="font-size:.75rem;color:var(--tx3)">筛选：晚于</span>
+          <span style="font-size:.75rem;color:var(--tx3)">晚于</span>
           <input type="date" id="tl-after" onchange="setTimelineAfter(this.value)">
-          <button onclick="clearTimelineAfter()">清除</button>
+          <span style="font-size:.75rem;color:var(--tx3)">早于</span>
+          <input type="date" id="tl-before" onchange="setTimelineBefore(this.value)">
+          <button onclick="clearTimelineFilter()">清除</button>
         </div>
         <div class="tl-body" id="tl-body"></div>
       </div>
@@ -641,6 +656,9 @@ genAppIcon();
       <button class="mob-nav-btn" id="nav-album" onclick="showAlbum()">
         <span class="nav-ic">🖼</span><span>相册</span>
       </button>
+      <button class="mob-nav-btn" id="nav-timeline" onclick="showTimeline()">
+        <span class="nav-ic">📅</span><span>时间轴</span>
+      </button>
       <button class="mob-nav-btn" id="nav-more" onclick="showMore()">
         <span class="nav-ic">⚙️</span><span>更多</span>
       </button>
@@ -653,8 +671,7 @@ genAppIcon();
   <div class="more-panel">
     <div class="more-title">更多操作</div>
     <div class="more-grid">
-      <button class="more-item" onclick="showTimeline();hideMore()">📅 时间轴</button>
-      <button class="more-item" onclick="showAlbum();hideMore()">🖼 相册</button>
+
       <div style="background:var(--card);border-radius:10px;border:1px solid var(--bd);padding:.85rem 1rem;">
         <div style="font-size:.82rem;color:var(--gold);font-weight:600;margin-bottom:.5rem">字体切换（全局默认）</div>
         <div class="font-grid" id="more-font-grid"></div>
@@ -713,7 +730,7 @@ const HB_BAK_KEYS=['hb_v3_bak1','hb_v3_bak2'];
 
 let CKEY=null, curAccId=null, selAccId=null;
 let data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:null};
-let st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:'',tlAfter:''};
+let st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:'',tlAfter:'',tlBefore:''};
 let syncToken=null, syncGistId=null;
 
 let lastEditorRange=null;
@@ -1081,7 +1098,7 @@ function enterApp(){
   else if(theme==='dark'&&document.body.classList.contains('light'))document.body.classList.remove('light');
   updateThemeBtn();
   applyGlobalFont(data.settings?.defaultFont||'');
-  st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:'',tlAfter:'',albumBefore:''};
+  st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:'',tlAfter:'',tlBefore:'',albumBefore:'',albumAfter:''};
   document.getElementById('s-inp').value='';
   document.getElementById('mob-s-inp').value='';
   renderAll();
@@ -1108,7 +1125,7 @@ function enterApp(){
 function doSwitchAcc(){
   CKEY=null;curAccId=null;
   data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:null};
-  st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:'',tlAfter:'',albumBefore:''};
+  st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:'',tlAfter:'',tlBefore:'',albumBefore:'',albumAfter:''};
   syncToken=null;syncGistId=null;
   showAccList(true);
 }
@@ -1125,7 +1142,7 @@ function closeSidebar(){
   document.getElementById('aside-ov').classList.remove('show');
 }
 function setNavActive(tab){
-  ['list','write','album','more'].forEach(t=>{
+  ['list','write','album','timeline','more'].forEach(t=>{
     const el=document.getElementById('nav-'+t);
     if(el)el.classList.toggle('active',t===tab);
   });
@@ -1564,15 +1581,21 @@ function openImgModalByEncoded(srcEncoded,captionEncoded){
 function closeImgModal(){document.getElementById('img-modal').classList.remove('show');}
 
 function showAlbum(){
-  const inp=document.getElementById('album-before');if(inp)inp.value=st.albumBefore||'';
+  const inpB=document.getElementById('album-before');if(inpB)inpB.value=st.albumBefore||'';
+  const inpA=document.getElementById('album-after');if(inpA)inpA.value=st.albumAfter||'';
   renderAlbum();
   if(isMob()){showMobPanel('album');setNavActive('album');}
   else showPanel('panel-album');
 }
 function setAlbumBefore(v){st.albumBefore=v||'';renderAlbum();}
-function clearAlbumBefore(){st.albumBefore='';const inp=document.getElementById('album-before');if(inp)inp.value='';renderAlbum();}
+function setAlbumAfter(v){st.albumAfter=v||'';renderAlbum();}
+function clearAlbumFilter(){
+  st.albumBefore='';st.albumAfter='';
+  const inpB=document.getElementById('album-before');if(inpB)inpB.value='';
+  const inpA=document.getElementById('album-after');if(inpA)inpA.value='';
+  renderAlbum();
+}
 
-/* ===== FIX 4: renderAlbum - removed orphan template literal lines ===== */
 async function renderAlbum(){
   const body=document.getElementById('album-body');
   const allImgs=[];
@@ -1581,6 +1604,11 @@ async function renderAlbum(){
       allImgs.push({src,date:new Date(e.date),entryId:e.id,title:e.title||'无标题'});
     });
   });
+  if(st.albumAfter){
+    const start=new Date(st.albumAfter+'T00:00:00');
+    const filtered=allImgs.filter(item=>item.date>=start);
+    allImgs.length=0;allImgs.push(...filtered);
+  }
   if(st.albumBefore){
     const end=new Date(st.albumBefore+'T23:59:59.999');
     const filtered=allImgs.filter(item=>item.date<=end);
@@ -1612,19 +1640,30 @@ async function renderAlbum(){
 }
 
 function showTimeline(){
-  const inp=document.getElementById('tl-after');if(inp)inp.value=st.tlAfter||'';
+  const inpA=document.getElementById('tl-after');if(inpA)inpA.value=st.tlAfter||'';
+  const inpB=document.getElementById('tl-before');if(inpB)inpB.value=st.tlBefore||'';
   renderTimeline();
-  if(isMob()){showMobPanel('timeline');setNavActive('more');}
+  if(isMob()){showMobPanel('timeline');setNavActive('timeline');}
   else showPanel('panel-timeline');
 }
 function setTimelineAfter(v){st.tlAfter=v||'';renderTimeline();}
-function clearTimelineAfter(){st.tlAfter='';const inp=document.getElementById('tl-after');if(inp)inp.value='';renderTimeline();}
+function setTimelineBefore(v){st.tlBefore=v||'';renderTimeline();}
+function clearTimelineFilter(){
+  st.tlAfter='';st.tlBefore='';
+  const inpA=document.getElementById('tl-after');if(inpA)inpA.value='';
+  const inpB=document.getElementById('tl-before');if(inpB)inpB.value='';
+  renderTimeline();
+}
 function renderTimeline(){
   const body=document.getElementById('tl-body');
   let entries=data.entries||[];
   if(st.tlAfter){
     const start=new Date(st.tlAfter+'T00:00:00');
     entries=entries.filter(e=>new Date(e.date)>=start);
+  }
+  if(st.tlBefore){
+    const end=new Date(st.tlBefore+'T23:59:59.999');
+    entries=entries.filter(e=>new Date(e.date)<=end);
   }
   if(!entries.length){body.innerHTML='<div class="tl-empty">没有符合条件的日记</div>';return;}
   const years={};
