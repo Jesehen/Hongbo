@@ -1749,7 +1749,7 @@ async function restoreFromToken(){
   if(!raw||raw==='{}'){alert('云端暂无数据');syncToken=null;return;}
   const remote=JSON.parse(raw);
   if(!remote.salt||!remote.ver||!remote.encData){alert('云端数据格式异常，请先在原设备点一次"立即同步"推送数据');syncToken=null;return;}
-  const name=prompt('给这个账号起个名字：')||'我的账号';
+  const name=prompt('大人请输入您之前的账号名：')||'我的账号';
   const pw=prompt('输入密码：');
   if(!pw){syncToken=null;return;}
   try{
