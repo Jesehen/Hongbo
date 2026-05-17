@@ -173,9 +173,9 @@ body.light .editor-tb{background:#f5f0e8;border-color:#c8c0a8;}
 .tb-btn{padding:.26rem .46rem;border-radius:5px;font-size:.82rem;color:var(--ink);min-width:27px;text-align:center;}
 .tb-btn:active{background:#d0c8a8;}
 .tb-sep{width:1px;height:16px;background:#d0c8b0;margin:0 .12rem;flex-shrink:0;}
-.tb-sel{padding:.24rem .34rem;background:#f0ebe0;border:1px solid #d0c8b0;border-radius:5px;color:var(--ink);font-size:.76rem;outline:none;max-width:82px;}
-#font-sel{max-width:76px;}
-body.light .tb-sel{background:#f5f0e8;border-color:#c8c0a8;}
+.tb-sel{padding:.24rem 1.4rem .24rem .34rem;background:#f0ebe0 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%23888'/%3E%3C/svg%3E") no-repeat right .4rem center;border:1px solid #d0c8b0;border-radius:5px;color:var(--ink);font-size:.76rem;outline:none;max-width:88px;cursor:pointer;}
+#font-sel{max-width:82px;}
+body.light .tb-sel{background-color:#f5f0e8;border-color:#c8c0a8;}
 .f-editor{min-height:200px;padding:.82rem .95rem;color:var(--ink);line-height:1.9;outline:none;word-break:break-word;}
 .f-editor:empty:before{content:attr(data-placeholder);color:#b0a888;pointer-events:none;}
 .wc-bar{padding:.3rem .8rem;font-size:.72rem;color:var(--tx3);text-align:right;border-top:1px solid #e8e0cc;background:var(--paper);}
@@ -553,19 +553,6 @@ genAppIcon();
             <div class="f-editor" id="f-body" contenteditable="true" data-placeholder="今天想说些什么？这里只有你一个人…"></div>
             <div class="wc-bar"><span id="wc-write">0 字</span></div>
           </div>
-        </div>
-        <div class="form-g">
-          <label class="f-lbl">默认字体（整篇）</label>
-          <select class="f-sel" id="f-font" onchange="applyEditorFont(this.value)">
-            <option value="">跟随全局设置</option>
-            <option value="f-songti">宋体（Songti SC）</option>
-            <option value="f-kaiti">楷体（Kaiti SC）</option>
-            <option value="f-fangsong">仿宋</option>
-            <option value="f-yahei">苹方/微软雅黑</option>
-            <option value="f-heiti">黑体</option>
-            <option value="f-notoserif">华文宋体</option>
-            <option value="f-mashan">华文楷体（草书感）</option>
-          </select>
         </div>
         <div class="img-sec">
           <label class="f-lbl">📷 图片（最多9张）</label>
@@ -1342,7 +1329,6 @@ function openWrite(){
   document.getElementById('f-url').value='';
   document.getElementById('f-linktitle').value='';
   document.getElementById('f-body').innerHTML='';
-  document.getElementById('f-font').value='';
   applyEditorFont('');
   document.getElementById('wc-write').textContent='0 字';
   document.getElementById('write-lbl').textContent='📝 新的记录';
@@ -1363,7 +1349,6 @@ function openEdit(){
   document.getElementById('f-url').value=e.url||'';
   document.getElementById('f-linktitle').value=e.linkTitle||'';
   document.getElementById('f-body').innerHTML=e.bodyHtml||(e.body?esc(e.body).replace(/\n/g,'<br>'):'');
-  document.getElementById('f-font').value=e.fontFamily||'';
   applyEditorFont(e.fontFamily||'');
   updateWordCount();
   document.getElementById('write-lbl').textContent='✏️ 编辑记录';
@@ -1396,7 +1381,7 @@ async function saveEntry(){
     colId:document.getElementById('f-col').value||null,
     url:document.getElementById('f-url').value.trim(),
     linkTitle:document.getElementById('f-linktitle').value.trim(),
-    fontFamily:document.getElementById('f-font').value||'',
+    fontFamily:'',
     images:storedImgs,
     starred:st.editId?((data.entries||[]).find(x=>x.id===st.editId)||{}).starred||false:false,
   };
