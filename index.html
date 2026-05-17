@@ -1285,10 +1285,7 @@ function renderMobList(){
   el.innerHTML=list.map(e=>makeEntryItem(e,st.entryId)).join('');
 }
 
-function updateCount(){
-  const cnt=(data.entries||[]).length;
-  document.title=cnt>0?`宏博 (${cnt})`:'宏博';
-}
+function updateCount(){}
 
 function filterCol(id){st.colId=id;renderAll();}
 function mobAddCol(){
