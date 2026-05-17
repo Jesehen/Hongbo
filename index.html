@@ -168,13 +168,13 @@ body.light .f-sel{background-color:#fff;border-color:#c8c0a8;}
 .editor-wrap{background:var(--paper);border:1.5px solid #d8ceb0;border-radius:8px;overflow:hidden;}
 .editor-wrap:focus-within{border-color:var(--gold);}
 body.light .editor-wrap{background:#fff;border-color:#c8c0a8;}
-.editor-tb{display:flex;align-items:center;gap:.18rem;padding:.38rem .55rem;background:#f0ebe0;border-bottom:1px solid #d8ceb0;flex-wrap:wrap;}
+.editor-tb{display:flex;flex-direction:column;gap:.28rem;padding:.4rem .55rem;background:#f0ebe0;border-bottom:1px solid #d8ceb0;}
 body.light .editor-tb{background:#f5f0e8;border-color:#c8c0a8;}
+.tb-row{display:flex;align-items:center;gap:.18rem;}
 .tb-btn{padding:.26rem .46rem;border-radius:5px;font-size:.82rem;color:var(--ink);min-width:27px;text-align:center;}
 .tb-btn:active{background:#d0c8a8;}
 .tb-sep{width:1px;height:16px;background:#d0c8b0;margin:0 .12rem;flex-shrink:0;}
-.tb-sel{padding:.24rem 1.4rem .24rem .34rem;background:#f0ebe0 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%23888'/%3E%3C/svg%3E") no-repeat right .4rem center;border:1px solid #d0c8b0;border-radius:5px;color:var(--ink);font-size:.76rem;outline:none;max-width:88px;cursor:pointer;}
-#font-sel{max-width:82px;}
+.tb-sel{padding:.24rem 1.5rem .24rem .44rem;background:#f0ebe0 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%23888'/%3E%3C/svg%3E") no-repeat right .4rem center;border:1px solid #d0c8b0;border-radius:5px;color:var(--ink);font-size:.76rem;outline:none;cursor:pointer;}
 body.light .tb-sel{background-color:#f5f0e8;border-color:#c8c0a8;}
 .f-editor{min-height:200px;padding:.82rem .95rem;color:var(--ink);line-height:1.9;outline:none;word-break:break-word;}
 .f-editor:empty:before{content:attr(data-placeholder);color:#b0a888;pointer-events:none;}
@@ -524,31 +524,33 @@ genAppIcon();
           <label class="f-lbl">正文 <span style="font-size:.63rem;color:var(--tx3);text-transform:none;letter-spacing:0">· 选中文字可改字号</span></label>
           <div class="editor-wrap">
             <div class="editor-tb">
-              <button class="tb-btn" onclick="fmt('bold')"><b>B</b></button>
-              <button class="tb-btn" onclick="fmt('italic')"><i>I</i></button>
-              <button class="tb-btn" onclick="fmt('underline')"><u>U</u></button>
-              <div class="tb-sep"></div>
-              <button class="tb-btn" onclick="fmt('justifyLeft')" title="居左">左</button>
-              <button class="tb-btn" onclick="fmt('justifyCenter')" title="居中">中</button>
-              <button class="tb-btn" onclick="fmt('justifyRight')" title="居右">右</button>
-              <div class="tb-sep"></div>
-              <select class="tb-sel" id="size-sel" onchange="applySelSize(this.value)" title="选中文字字号">
-                <option value="">字号</option>
-                <option value="11px">11</option><option value="13px">13</option>
-                <option value="15px">15</option><option value="18px">18</option>
-                <option value="22px">22</option><option value="28px">28</option>
-              </select>
-              <div class="tb-sep"></div>
-              <select class="tb-sel" id="font-sel" onchange="applySelFont(this.value)" title="选中文字字体">
-                <option value="">字体</option>
-                <option value="'Songti SC','STSong','华文宋体',Georgia,serif">宋体</option>
-                <option value="'Kaiti SC','STKaiti','华文楷体','楷体',serif">楷体</option>
-                <option value="'STFangsong','华文仿宋','仿宋',serif">仿宋</option>
-                <option value="'PingFang SC','Microsoft YaHei',sans-serif">苹方/雅黑</option>
-                <option value="'Heiti SC','STHeiti','黑体',sans-serif">黑体</option>
-              </select>
-              <div class="tb-sep"></div>
-              <button class="tb-btn" onclick="fmt('removeFormat')" style="font-size:.68rem">清格式</button>
+              <div class="tb-row">
+                <button class="tb-btn" onclick="fmt('bold')"><b>B</b></button>
+                <button class="tb-btn" onclick="fmt('italic')"><i>I</i></button>
+                <button class="tb-btn" onclick="fmt('underline')"><u>U</u></button>
+                <div class="tb-sep"></div>
+                <button class="tb-btn" onclick="fmt('justifyLeft')" title="居左">左</button>
+                <button class="tb-btn" onclick="fmt('justifyCenter')" title="居中">中</button>
+                <button class="tb-btn" onclick="fmt('justifyRight')" title="居右">右</button>
+              </div>
+              <div class="tb-row">
+                <select class="tb-sel" id="size-sel" onchange="applySelSize(this.value)" title="选中文字字号">
+                  <option value="">字号</option>
+                  <option value="11px">11</option><option value="13px">13</option>
+                  <option value="15px">15</option><option value="18px">18</option>
+                  <option value="22px">22</option><option value="28px">28</option>
+                </select>
+                <select class="tb-sel" id="font-sel" onchange="applySelFont(this.value)" title="选中文字字体">
+                  <option value="">字体</option>
+                  <option value="'Songti SC','STSong','华文宋体',Georgia,serif">宋体</option>
+                  <option value="'Kaiti SC','STKaiti','华文楷体','楷体',serif">楷体</option>
+                  <option value="'STFangsong','华文仿宋','仿宋',serif">仿宋</option>
+                  <option value="'PingFang SC','Microsoft YaHei',sans-serif">苹方/雅黑</option>
+                  <option value="'Heiti SC','STHeiti','黑体',sans-serif">黑体</option>
+                </select>
+                <div class="tb-sep"></div>
+                <button class="tb-btn" onclick="fmt('removeFormat')" style="font-size:.68rem">清格式</button>
+              </div>
             </div>
             <div class="f-editor" id="f-body" contenteditable="true" data-placeholder="今天想说些什么？这里只有你一个人…"></div>
             <div class="wc-bar"><span id="wc-write">0 字</span></div>
