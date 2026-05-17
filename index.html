@@ -972,10 +972,10 @@ async function showAccList(skipAuto=false){
     }
   }
   document.getElementById('acc-list').innerHTML=accs.map((acc,i)=>`
-    <div class="acc-card" onclick="showLogin('${acc.id}')">
-      <div class="acc-av" style="background:${COL_COLORS[i%COL_COLORS.length]}">${acc.avatar||'📖'}</div>
+    <div class="acc-card" onclick="showLogin('${esc(acc.id)}')">
+      <div class="acc-av" style="background:${COL_COLORS[i%COL_COLORS.length]}">${esc(acc.avatar||'📖')}</div>
       <div><div class="acc-name">${esc(acc.name)}</div><div class="acc-hint">点击登录</div></div>
-      <button class="acc-del" onclick="event.stopPropagation();deleteAcc('${acc.id}')">🗑</button>
+      <button class="acc-del" onclick="event.stopPropagation();deleteAcc('${esc(acc.id)}')">🗑</button>
     </div>`).join('');
   document.getElementById('sc-list').style.display='flex';
 }
@@ -1212,11 +1212,11 @@ function renderCols(){
   </div>`;
   (data.columns||[]).forEach(col=>{
     const cnt=(data.entries||[]).filter(e=>e.colId===col.id).length;
-    h+=`<div class="col-item ${st.colId===col.id?'active':''}" onclick="filterCol('${col.id}')">
-      <div class="col-dot" style="background:${col.color}"></div>
+    h+=`<div class="col-item ${st.colId===col.id?'active':''}" onclick="filterCol('${esc(col.id)}')">
+      <div class="col-dot" style="background:${esc(col.color)}"></div>
       <span class="col-name">${esc(col.name)}</span>
       <span class="col-cnt">${cnt}</span>
-      <button class="col-del" onclick="event.stopPropagation();deleteCol('${col.id}')">✕</button>
+      <button class="col-del" onclick="event.stopPropagation();deleteCol('${esc(col.id)}')">✕</button>
     </div>`;
   });
   el.innerHTML=h;
@@ -1227,7 +1227,7 @@ function renderMobColBar(){
   const allBtn=`<button class="mob-col-tab ${st.colId==='__all__'?'active':''}" onclick="mobFilterCol('__all__')">全部</button>
     <button class="mob-col-tab ${st.colId==='__starred__'?'active':''}" onclick="mobFilterCol('__starred__')">⭐收藏</button>`;
   const colBtns=(data.columns||[]).map(col=>
-    `<button class="mob-col-tab ${st.colId===col.id?'active':''}" onclick="mobFilterCol('${col.id}')">${esc(col.name)}</button>`
+    `<button class="mob-col-tab ${st.colId===col.id?'active':''}" onclick="mobFilterCol('${esc(col.id)}')">${esc(col.name)}</button>`
   ).join('');
   bar.innerHTML=allBtn+colBtns;
 }
@@ -1249,9 +1249,9 @@ function makeEntryItem(e,activeId){
   if(e.images&&e.images.length)icons.push('📷');
   if(e.url)icons.push('🔗');
   const prev=(e.bodyHtml||e.body||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,50);
-  return `<div class="e-item ${e.id===activeId?'active':''}" onclick="viewEntry('${e.id}')">
+  return `<div class="e-item ${e.id===activeId?'active':''}" onclick="viewEntry('${esc(e.id)}')">
     <div class="e-meta">
-      <div class="e-cdot" style="background:${col?col.color:'transparent'}"></div>
+      <div class="e-cdot" style="background:${col?esc(col.color):'transparent'}"></div>
       <span class="e-date">${fmtDt(new Date(e.date))}</span>
       ${e.starred?'<span class="e-star">⭐</span>':''}
     </div>
@@ -1484,7 +1484,7 @@ async function viewEntry(id){
   }else imgEl.style.display='none';
   const vc=document.getElementById('v-content');
   vc.className='v-content'+(e.fontFamily?' '+e.fontFamily:data.settings?.defaultFont?' '+data.settings.defaultFont:'');
-  vc.innerHTML=e.bodyHtml||(e.body?esc(e.body).replace(/\n/g,'<br>'):'');
+  vc.innerHTML=sanitizeHtml(e.bodyHtml||(e.body?esc(e.body).replace(/\n/g,'<br>'):''));
   if(isMob()){showMobPanel('view');setNavActive('list');}
   else showPanel('panel-view');
   renderList();renderMobList();
@@ -1668,7 +1668,7 @@ function renderTimeline(){
       <div class="tl-month">
         <div class="tl-month-hdr">📅 ${month.replace(/^\d+年/,'')} · ${ents.length}篇</div>
         ${ents.map(e=>`
-          <div class="tl-entry" onclick="viewEntry('${e.id}')">
+          <div class="tl-entry" onclick="viewEntry('${esc(e.id)}')">
             <div class="tl-entry-date">${fmtDtFull(new Date(e.date))}</div>
             <div class="tl-entry-title">${e.starred?'⭐ ':''}${esc(e.title||'无标题')}</div>
           </div>`).join('')}
@@ -1878,7 +1878,25 @@ function fmtDtFull(d){
   return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 周${w[d.getDay()]} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 function pad(n){return n<10?'0'+n:String(n);}
-function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function sanitizeHtml(html){
+  const tmp=document.createElement('div');tmp.innerHTML=html;
+  const TAGS=new Set(['b','strong','i','em','u','s','strike','br','p','div','span','ul','ol','li','blockquote','h1','h2','h3']);
+  const BAD_STYLE=/expression|javascript|vbscript|url\s*\(/i;
+  const walk=n=>{
+    [...n.childNodes].forEach(c=>{
+      if(c.nodeType===1){
+        if(!TAGS.has(c.tagName.toLowerCase())){c.replaceWith(document.createTextNode(c.textContent));return;}
+        [...c.attributes].forEach(a=>{
+          if(a.name==='style'){if(BAD_STYLE.test(a.value))c.removeAttribute('style');}
+          else if(a.name!=='align')c.removeAttribute(a.name);
+        });
+        walk(c);
+      }
+    });
+  };
+  walk(tmp);return tmp.innerHTML;
+}
 </script>
 </body>
 </html>
