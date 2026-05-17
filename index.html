@@ -31,7 +31,8 @@ html,body{height:100%;-webkit-tap-highlight-color:transparent;}
 body{background:var(--bg);color:var(--tx);font-family:'Microsoft YaHei','PingFang SC',system-ui,sans-serif;height:100%;overflow:hidden;transition:background .25s,color .25s;}
 ::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
 button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;-webkit-appearance:none;}
-input,textarea,select{font-family:inherit;-webkit-appearance:none;}
+input:not([type=checkbox]):not([type=radio]),textarea,select{font-family:inherit;-webkit-appearance:none;}
+input[type=checkbox],input[type=radio]{-webkit-appearance:auto;appearance:auto;}
 
 .f-songti{font-family:'Songti SC','STSong','华文宋体','宋体',Georgia,serif!important;}
 .f-heiti{font-family:'Heiti SC','STHeiti','黑体','PingFang SC',sans-serif!important;}
@@ -608,9 +609,11 @@ genAppIcon();
           <h2>相 册</h2>
         </div>
         <div class="album-filter">
-          <span style="font-size:.75rem;color:var(--tx3)">筛选：早于/等于</span>
+          <span style="font-size:.75rem;color:var(--tx3)">晚于</span>
+          <input type="date" id="album-after" onchange="setAlbumAfter(this.value)">
+          <span style="font-size:.75rem;color:var(--tx3)">早于</span>
           <input type="date" id="album-before" onchange="setAlbumBefore(this.value)">
-          <button onclick="clearAlbumBefore()">清除</button>
+          <button onclick="clearAlbumFilter()">清除</button>
         </div>
         <div class="album-body" id="album-body"></div>
       </div>
@@ -1081,7 +1084,7 @@ function enterApp(){
   else if(theme==='dark'&&document.body.classList.contains('light'))document.body.classList.remove('light');
   updateThemeBtn();
   applyGlobalFont(data.settings?.defaultFont||'');
-  st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:'',tlAfter:'',albumBefore:''};
+  st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:'',tlAfter:'',albumBefore:'',albumAfter:''};
   document.getElementById('s-inp').value='';
   document.getElementById('mob-s-inp').value='';
   renderAll();
@@ -1108,7 +1111,7 @@ function enterApp(){
 function doSwitchAcc(){
   CKEY=null;curAccId=null;
   data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:null};
-  st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:'',tlAfter:'',albumBefore:''};
+  st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:'',tlAfter:'',albumBefore:'',albumAfter:''};
   syncToken=null;syncGistId=null;
   showAccList(true);
 }
@@ -1564,15 +1567,21 @@ function openImgModalByEncoded(srcEncoded,captionEncoded){
 function closeImgModal(){document.getElementById('img-modal').classList.remove('show');}
 
 function showAlbum(){
-  const inp=document.getElementById('album-before');if(inp)inp.value=st.albumBefore||'';
+  const inpB=document.getElementById('album-before');if(inpB)inpB.value=st.albumBefore||'';
+  const inpA=document.getElementById('album-after');if(inpA)inpA.value=st.albumAfter||'';
   renderAlbum();
   if(isMob()){showMobPanel('album');setNavActive('album');}
   else showPanel('panel-album');
 }
 function setAlbumBefore(v){st.albumBefore=v||'';renderAlbum();}
-function clearAlbumBefore(){st.albumBefore='';const inp=document.getElementById('album-before');if(inp)inp.value='';renderAlbum();}
+function setAlbumAfter(v){st.albumAfter=v||'';renderAlbum();}
+function clearAlbumFilter(){
+  st.albumBefore='';st.albumAfter='';
+  const inpB=document.getElementById('album-before');if(inpB)inpB.value='';
+  const inpA=document.getElementById('album-after');if(inpA)inpA.value='';
+  renderAlbum();
+}
 
-/* ===== FIX 4: renderAlbum - removed orphan template literal lines ===== */
 async function renderAlbum(){
   const body=document.getElementById('album-body');
   const allImgs=[];
@@ -1581,6 +1590,11 @@ async function renderAlbum(){
       allImgs.push({src,date:new Date(e.date),entryId:e.id,title:e.title||'无标题'});
     });
   });
+  if(st.albumAfter){
+    const start=new Date(st.albumAfter+'T00:00:00');
+    const filtered=allImgs.filter(item=>item.date>=start);
+    allImgs.length=0;allImgs.push(...filtered);
+  }
   if(st.albumBefore){
     const end=new Date(st.albumBefore+'T23:59:59.999');
     const filtered=allImgs.filter(item=>item.date<=end);
