@@ -43,6 +43,14 @@ input,textarea,select{font-family:inherit;-webkit-appearance:none;}
 .f-notoserif{font-family:'Songti SC','STSong','华文宋体',Georgia,serif!important;}
 .f-notosc{font-family:'PingFang SC','Heiti SC','Microsoft YaHei',sans-serif!important;}
 .f-mashan{font-family:'Kaiti SC','STKaiti','华文楷体','楷体',cursive!important;}
+body.f-songti,body.f-songti *{font-family:'Songti SC','STSong','华文宋体','宋体',Georgia,serif!important;}
+body.f-heiti,body.f-heiti *{font-family:'Heiti SC','STHeiti','黑体','PingFang SC',sans-serif!important;}
+body.f-kaiti,body.f-kaiti *{font-family:'Kaiti SC','STKaiti','华文楷体','楷体',serif!important;}
+body.f-fangsong,body.f-fangsong *{font-family:'STFangsong','华文仿宋','仿宋',serif!important;}
+body.f-yahei,body.f-yahei *{font-family:'PingFang SC','Microsoft YaHei','微软雅黑',sans-serif!important;}
+body.f-notoserif,body.f-notoserif *{font-family:'Songti SC','STSong','华文宋体',Georgia,serif!important;}
+body.f-notosc,body.f-notosc *{font-family:'PingFang SC','Heiti SC','Microsoft YaHei',sans-serif!important;}
+body.f-mashan,body.f-mashan *{font-family:'Kaiti SC','STKaiti','华文楷体','楷体',cursive!important;}
 
 /* AUTH */
 .auth-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:300;overflow-y:auto;padding:1.5rem;}
@@ -173,7 +181,8 @@ body.light .editor-tb{background:#f5f0e8;border-color:#c8c0a8;}
 .tb-btn{padding:.26rem .46rem;border-radius:5px;font-size:.82rem;color:var(--ink);min-width:27px;text-align:center;}
 .tb-btn:active{background:#d0c8a8;}
 .tb-sep{width:1px;height:16px;background:#d0c8b0;margin:0 .12rem;flex-shrink:0;}
-.tb-sel{padding:.24rem .38rem;background:#f0ebe0;border:1px solid #d0c8b0;border-radius:5px;color:var(--ink);font-size:.76rem;outline:none;max-width:90px;}
+.tb-sel{padding:.24rem .34rem;background:#f0ebe0;border:1px solid #d0c8b0;border-radius:5px;color:var(--ink);font-size:.76rem;outline:none;max-width:82px;}
+#font-sel{max-width:76px;}
 body.light .tb-sel{background:#f5f0e8;border-color:#c8c0a8;}
 .f-editor{min-height:200px;padding:.82rem .95rem;color:var(--ink);line-height:1.9;outline:none;word-break:break-word;}
 .f-editor:empty:before{content:attr(data-placeholder);color:#b0a888;pointer-events:none;}
@@ -237,6 +246,9 @@ body.light .wc-bar{background:#fff;}
 .tl-hdr{display:flex;align-items:center;gap:.5rem;padding:1rem 1.5rem .5rem;flex-shrink:0;}
 .tl-hdr h2{font-family:Georgia,serif;font-size:1.1rem;color:var(--gold);font-weight:normal;flex:1;}
 .tl-body{flex:1;overflow-y:auto;padding:.5rem 1.5rem 2rem;}
+.tl-filter{display:flex;align-items:center;gap:.45rem;padding:0 1.5rem .45rem;flex-wrap:wrap;}
+.tl-filter input{padding:.38rem .55rem;background:var(--card);border:1px solid var(--bd);border-radius:6px;color:var(--tx);font-size:.8rem;}
+.tl-filter button{padding:.34rem .6rem;border:1px solid var(--bd);border-radius:6px;font-size:.76rem;color:var(--tx2);}
 .tl-year{font-size:.95rem;color:var(--gold);font-weight:500;font-family:Georgia,serif;margin:1.2rem 0 .5rem;}
 .tl-month{margin-bottom:1rem;border-left:2px solid var(--bd2);padding-left:1rem;margin-left:.4rem;}
 .tl-month-hdr{font-size:.85rem;color:var(--tx2);font-weight:500;margin-bottom:.5rem;cursor:pointer;display:flex;align-items:center;gap:.4rem;}
@@ -457,6 +469,8 @@ genAppIcon();
       <button class="hdr-btn d-only" onclick="showAlbum()">相册</button>
       <button class="hdr-btn d-only" onclick="showTimeline()">时间轴</button>
       <button class="hdr-btn gold" onclick="saveHtmlFile()">💾 保存</button>
+      <button class="hdr-btn d-only" onclick="doExport()">📤 备份</button>
+      <button class="hdr-btn d-only" onclick="showMore()">更多</button>
       <button class="hdr-btn gold d-only" onclick="doSwitchAcc()">切换</button>
     </div>
   </header>
@@ -562,7 +576,7 @@ genAppIcon();
         </div>
         <div class="form-g">
           <label class="f-lbl">默认字体（整篇）</label>
-          <select class="f-sel" id="f-font">
+          <select class="f-sel" id="f-font" onchange="applyEditorFont(this.value)">
             <option value="">跟随全局设置</option>
             <option value="f-songti">宋体（Songti SC）</option>
             <option value="f-kaiti">楷体（Kaiti SC）</option>
@@ -637,6 +651,11 @@ genAppIcon();
           <button class="mob-back-btn" onclick="showPanel('panel-empty')" style="display:flex">← 返回</button>
           <h2>时 间 轴</h2>
         </div>
+        <div class="tl-filter">
+          <span style="font-size:.75rem;color:var(--tx3)">筛选：晚于</span>
+          <input type="date" id="tl-after" onchange="setTimelineAfter(this.value)">
+          <button onclick="clearTimelineAfter()">清除</button>
+        </div>
         <div class="tl-body" id="tl-body"></div>
       </div>
     </div>
@@ -674,8 +693,16 @@ genAppIcon();
         <div class="font-grid" id="more-font-grid"></div>
       </div>
       <div class="sync-section">
+        <div class="sync-title">💽 存储状态</div>
+        <div class="sync-desc" id="storage-stats">检测中…</div>
+        <div class="sync-btns">
+          <button class="sync-btn ghost" onclick="refreshStorageStats()">刷新容量</button>
+          <button class="sync-btn ghost" onclick="doExport()">立即备份</button>
+        </div>
+      </div>
+      <div class="sync-section">
         <div class="sync-title">🔄 双端同步</div>
-        <div class="sync-desc">连接 GitHub Token（需 gist 权限），手机和电脑日记自动同步。</div>
+        <div class="sync-desc">连接 GitHub Token（需 gist 权限），手机和电脑日记自动同步。Token 仅保存在本地加密数据中。</div>
         <input class="sync-inp" type="password" id="sync-token-inp" placeholder="粘贴 GitHub Token…">
         <div class="sync-btns">
           <button class="sync-btn primary" onclick="setupSync()">连接</button>
@@ -712,31 +739,130 @@ const FONTS=[
   {id:'f-mashan',label:'华文楷体'},
 ];
 const GIST_FILE='hongbo_diary_sync.json';
+const GIST_BAK_FILE='hongbo_diary_sync_backup.json';
 const GIST_DESC='hongbo-diary-sync-v3';
+const HB_MAIN_KEY='hb_v3';
+const HB_BAK_KEYS=['hb_v3_bak1','hb_v3_bak2'];
 
 /* ===== STATE ===== */
 let CKEY=null, curAccId=null, selAccId=null;
 let data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:null};
-let st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:''};
+let st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:'',tlAfter:''};
 let syncToken=null, syncGistId=null;
 
+let lastEditorRange=null;
+function cacheEditorSelection(){
+  const editor=document.getElementById('f-body');
+  const sel=window.getSelection();
+  if(!editor||!sel||sel.rangeCount===0)return;
+  const range=sel.getRangeAt(0);
+  if(editor.contains(range.commonAncestorContainer))lastEditorRange=range.cloneRange();
+}
+function getEditorRange(){
+  const editor=document.getElementById('f-body');
+  const sel=window.getSelection();
+  if(editor&&sel&&sel.rangeCount){
+    const r=sel.getRangeAt(0);
+    if(editor.contains(r.commonAncestorContainer)&&!sel.isCollapsed)return r;
+  }
+  return lastEditorRange;
+}
+
+
+
+
+/* ===== IMAGE STORE (IndexedDB) ===== */
+const IMG_DB='hongbo_img_v1', IMG_STORE='images', ACC_STORE='accdata';
+let imgDbPromise=null, imgUrlCache=new Map();
+function openImgDb(){
+  if(imgDbPromise)return imgDbPromise;
+  imgDbPromise=new Promise((res,rej)=>{
+    const req=indexedDB.open(IMG_DB,2);
+    req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains(IMG_STORE))db.createObjectStore(IMG_STORE);if(!db.objectStoreNames.contains(ACC_STORE))db.createObjectStore(ACC_STORE);};
+    req.onsuccess=()=>res(req.result);req.onerror=()=>rej(req.error);
+  });
+  return imgDbPromise;
+}
+function dataUrlToBlob(dataUrl){
+  const [meta,b64]=dataUrl.split(',');
+  const mime=(meta.match(/data:(.*?);base64/)||[])[1]||'image/jpeg';
+  const bin=atob(b64);const arr=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
+  return new Blob([arr],{type:mime});
+}
+async function saveImageToDb(src){
+  if(!src||src.startsWith('idb:'))return src;
+  if(!src.startsWith('data:'))return src;
+  const db=await openImgDb();
+  const id='img_'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+  await new Promise((res,rej)=>{const tx=db.transaction(IMG_STORE,'readwrite');tx.objectStore(IMG_STORE).put(dataUrlToBlob(src),id);tx.oncomplete=res;tx.onerror=()=>rej(tx.error);});
+  return 'idb:'+id;
+}
+async function getImageSrc(src){
+  if(!src||!src.startsWith('idb:'))return src;
+  if(imgUrlCache.has(src))return imgUrlCache.get(src);
+  const id=src.slice(4);const db=await openImgDb();
+  const blob=await new Promise((res,rej)=>{const tx=db.transaction(IMG_STORE,'readonly');const r=tx.objectStore(IMG_STORE).get(id);r.onsuccess=()=>res(r.result||null);r.onerror=()=>rej(r.error);});
+  if(!blob)return '';
+  const url=URL.createObjectURL(blob);imgUrlCache.set(src,url);return url;
+}
+async function materializeImageList(list){
+  return Promise.all((list||[]).map(getImageSrc));
+}
+
+async function saveAccCipherToDb(enc){
+  if(!enc||enc.startsWith('idbacc:'))return enc;
+  const db=await openImgDb();
+  const id='acc_'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+  await new Promise((res,rej)=>{const tx=db.transaction(ACC_STORE,'readwrite');tx.objectStore(ACC_STORE).put(enc,id);tx.oncomplete=res;tx.onerror=()=>rej(tx.error);});
+  return 'idbacc:'+id;
+}
+async function readAccCipher(ref){
+  if(!ref)return '';
+  if(!ref.startsWith('idbacc:'))return ref;
+  const id=ref.slice(7);const db=await openImgDb();
+  return await new Promise((res,rej)=>{const tx=db.transaction(ACC_STORE,'readonly');const r=tx.objectStore(ACC_STORE).get(id);r.onsuccess=()=>res(r.result||'');r.onerror=()=>rej(r.error);});
+}
+
 /* ===== STORE (embedded HTML) ===== */
+function parseHbPayload(raw){
+  if(!raw)return null;
+  try{
+    const p=JSON.parse(raw);
+    if(p&&p.v===3&&Array.isArray(p.accounts))return p;
+  }catch{}
+  return null;
+}
 function storeGet(){
-  try{const ls=localStorage.getItem('hb_v3');if(ls){const p=JSON.parse(ls);if(p&&p.v===3)return p;}}catch{}
+  const keys=[HB_MAIN_KEY,...HB_BAK_KEYS];
+  for(const k of keys){
+    try{
+      const parsed=parseHbPayload(localStorage.getItem(k));
+      if(parsed)return parsed;
+    }catch{}
+  }
   return window.__HB__||{v:3,accounts:[]};
 }
 function storeSet(hb){
   window.__HB__=hb;
-  try{document.getElementById('hb-store').textContent='var __HB__='+JSON.stringify(hb)+';';}catch{}
-  try{localStorage.setItem('hb_v3',JSON.stringify(hb));}catch{}
+  const payload=JSON.stringify(hb);
+  try{document.getElementById('hb-store').textContent='var __HB__='+payload+';';}catch{}
+  try{
+    const prev=localStorage.getItem(HB_MAIN_KEY);
+    const prevBak1=localStorage.getItem(HB_BAK_KEYS[0]);
+    if(prevBak1)localStorage.setItem(HB_BAK_KEYS[1],prevBak1);
+    if(prev)localStorage.setItem(HB_BAK_KEYS[0],prev);
+    localStorage.setItem(HB_MAIN_KEY,payload);
+    return true;
+  }catch{return false;}
 }
 function storeGetAcc(id){return storeGet().accounts.find(a=>a.id===id)||null;}
 function storeUpdateAcc(id,patch){
   const hb=storeGet();
   const idx=hb.accounts.findIndex(a=>a.id===id);
-  if(idx<0)return;
+  if(idx<0)return false;
   hb.accounts[idx]={...hb.accounts[idx],...patch};
-  storeSet(hb);
+  return storeSet(hb);
 }
 function storeAddAcc(acc){const hb=storeGet();hb.accounts.push(acc);storeSet(hb);}
 function storeRemoveAcc(id){const hb=storeGet();hb.accounts=hb.accounts.filter(a=>a.id!==id);storeSet(hb);}
@@ -766,9 +892,14 @@ async function aesDec(key,b64){
   return new TextDecoder().decode(pt);
 }
 async function saveAccData(){
-  if(!CKEY||!curAccId)return;
+  if(!CKEY||!curAccId)return false;
+  const rough=roughSizeOfData();
+  if(rough>6*1024*1024)showToast('⚠️ 数据体积较大，建议立即导出备份');
   const enc=await aesEnc(CKEY,JSON.stringify(data));
-  storeUpdateAcc(curAccId,{data:enc,updated:Date.now()});
+  const packed=await saveAccCipherToDb(enc);
+  const ok=storeUpdateAcc(curAccId,{data:packed,updated:Date.now()});
+  if(!ok)throw new Error('本地存储空间不足，数据未能保存。请减少图片数量/大小后重试。');
+  return true;
 }
 
 /* ===== REMEMBER PASSWORD ===== */
@@ -786,7 +917,7 @@ async function getDeviceKey(){
 async function rememberPw(accId,pw){
   const key=await getDeviceKey();
   const iv=crypto.getRandomValues(new Uint8Array(12));
-  const payload=JSON.stringify({pw,accId,expires:Date.now()+30*24*60*60*1000});
+  const payload=JSON.stringify({pw,accId,expires:Date.now()+7*24*60*60*1000});
   const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(payload));
   const out=new Uint8Array(12+ct.byteLength);out.set(iv);out.set(new Uint8Array(ct),12);
   localStorage.setItem('hb_rem_'+accId,btoa(String.fromCharCode(...out)));
@@ -816,6 +947,9 @@ window.onload=async()=>{
   document.getElementById('pw-inp').addEventListener('keydown',e=>{if(e.key==='Enter')handleLogin();});
   document.getElementById('new-pw2').addEventListener('keydown',e=>{if(e.key==='Enter')handleNewAccount();});
   document.getElementById('f-body').addEventListener('input',updateWordCount);
+  document.getElementById('f-body').addEventListener('mouseup',cacheEditorSelection);
+  document.getElementById('f-body').addEventListener('keyup',cacheEditorSelection);
+  document.addEventListener('selectionchange',cacheEditorSelection);
   document.getElementById('f-body').addEventListener('paste',e=>{
     e.preventDefault();
     const text=(e.clipboardData||window.clipboardData).getData('text/plain');
@@ -852,7 +986,7 @@ async function showAccList(skipAuto=false){
       const savedPw=await checkRemember(acc.id);
       if(savedPw){
         selAccId=acc.id;
-        await doLogin(acc.id,savedPw,false);
+        await doLogin(acc.id,savedPw,false,false);
         return;
       }
     }
@@ -900,7 +1034,7 @@ async function handleLogin(){
   const btn=document.getElementById('login-btn');
   btn.textContent='验证中…';btn.disabled=true;
   const remember=document.getElementById('remember-cb').checked;
-  const ok=await doLogin(selAccId,pw,remember);
+  const ok=await doLogin(selAccId,pw,remember,true);
   if(!ok){
     errEl.textContent='密码错误，请重试';
     document.getElementById('pw-inp').value='';
@@ -908,7 +1042,7 @@ async function handleLogin(){
     btn.textContent='登 录';btn.disabled=false;
   }
 }
-async function doLogin(accId,pw,remember){
+async function doLogin(accId,pw,remember,manageRemember){
   const acc=storeGetAcc(accId);
   if(!acc||!acc.salt||!acc.ver)return false;
   try{
@@ -917,9 +1051,12 @@ async function doLogin(accId,pw,remember){
     const ver=await aesDec(key,acc.ver);
     if(ver!=='HONGBO_OK')return false;
     CKEY=key;curAccId=accId;
-    if(acc.data){const plain=await aesDec(CKEY,acc.data);data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:null,...JSON.parse(plain)};}
+    if(acc.data){const encData=await readAccCipher(acc.data);const plain=await aesDec(CKEY,encData);data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:null,...JSON.parse(plain)};}
     else data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:null};
-    if(remember)await rememberPw(accId,pw);
+    if(manageRemember){
+      if(remember)await rememberPw(accId,pw);
+      else forgetPw(accId);
+    }
     enterApp();
     return true;
   }catch{CKEY=null;curAccId=null;return false;}
@@ -948,7 +1085,6 @@ async function handleNewAccount(){
     CKEY=key;curAccId=id;
     data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:null};
     await saveAccData();
-    await rememberPw(id,pw);
     enterApp();
   }catch{errEl.textContent='创建失败';btn.textContent='创 建 账 号';btn.disabled=false;}
 }
@@ -975,7 +1111,7 @@ function enterApp(){
   updateThemeBtn();
   // apply default font
   applyGlobalFont(data.settings?.defaultFont||'');
-  st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:''};
+  st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:'',tlAfter:''};
   document.getElementById('s-inp').value='';
   document.getElementById('mob-s-inp').value='';
   renderAll();
@@ -983,13 +1119,14 @@ function enterApp(){
   if(data.syncConfig){syncToken=data.syncConfig.token;syncGistId=data.syncConfig.gistId;}
   if(document.getElementById('sync-token-inp'))document.getElementById('sync-token-inp').value=syncToken||'';
   if(syncToken&&syncGistId)syncFromGist(false);
+  refreshStorageStats();
   renderMoreFonts();
   isMob()?showMobPanel('list'):showPanel('panel-empty');
 }
 function doSwitchAcc(){
   CKEY=null;curAccId=null;
   data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:null};
-  st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:''};
+  st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:'',tlAfter:''};
   syncToken=null;syncGistId=null;
   showAccList(true);
 }
@@ -1045,12 +1182,29 @@ function showPanel(id){
 
 /* ===== FONT ===== */
 function applyGlobalFont(fontId){
-  document.getElementById('f-editor')&&(document.getElementById('f-body').className='f-editor'+(fontId?' '+fontId:''));
-  const vc=document.getElementById('v-content');
-  if(vc){vc.className='v-content'+(fontId?' '+fontId:'');}
   data.settings=data.settings||{};
   data.settings.defaultFont=fontId;
+
+  FONTS.forEach(f=>document.body.classList.remove(f.id));
+  if(fontId)document.body.classList.add(fontId);
+
+  applyEditorFont(document.getElementById('f-font')?.value||'');
+
+  const vc=document.getElementById('v-content');
+  if(vc){
+    const cur=(data.entries||[]).find(x=>x.id===st.entryId);
+    const picked=cur?.fontFamily||fontId||'';
+    vc.className='v-content'+(picked?' '+picked:'');
+  }
 }
+
+function applyEditorFont(fontId){
+  const body=document.getElementById('f-body');
+  if(!body)return;
+  const picked=fontId||(data.settings?.defaultFont||'');
+  body.className='f-editor'+(picked?' '+picked:'');
+}
+
 function renderMoreFonts(){
   const el=document.getElementById('more-font-grid');
   if(!el)return;
@@ -1059,9 +1213,10 @@ function renderMoreFonts(){
 }
 function setGlobalFont(fontId){
   applyGlobalFont(fontId);
-  saveAccData();
+  saveAccData().catch(e=>alert(e.message||'保存失败'));
   renderMoreFonts();
-  showToast('字体已切换：'+FONTS.find(f=>f.id===fontId)?.label);
+  const picked=FONTS.find(f=>f.id===fontId)?.label||'跟随系统';
+  showToast('字体已切换：'+picked);
 }
 
 /* ===== RENDER ALL ===== */
@@ -1158,7 +1313,7 @@ function mobAddCol(){
   if(!name||!name.trim())return;
   if(!data.columns)data.columns=[];
   data.columns.push({id:Date.now().toString(),name:name.trim().slice(0,10),color:COL_COLORS[data.columns.length%COL_COLORS.length]});
-  saveAccData();renderAll();
+  saveAccData().catch(e=>alert(e.message||'保存失败'));renderAll();
   showToast('专栏「'+name.trim().slice(0,10)+'」已创建');
 }
 function mobFilterCol(id){st.colId=id;renderAll();}
@@ -1176,7 +1331,7 @@ function addColumn(){
   if(!name)return;
   if(!data.columns)data.columns=[];
   data.columns.push({id:Date.now().toString(),name,color:COL_COLORS[data.columns.length%COL_COLORS.length]});
-  saveAccData();
+  saveAccData().catch(e=>alert(e.message||'保存失败'));
   document.getElementById('col-inp').value='';
   document.getElementById('col-form').classList.remove('show');
   renderAll();
@@ -1190,7 +1345,7 @@ function deleteCol(id){
   data.columns=(data.columns||[]).filter(c=>c.id!==id);
   (data.entries||[]).forEach(e=>{if(e.colId===id)e.colId=null;});
   if(st.colId===id)st.colId='__all__';
-  saveAccData();renderAll();
+  saveAccData().catch(e=>alert(e.message||'保存失败'));renderAll();
 }
 
 /* ===== WRITE ===== */
@@ -1210,6 +1365,7 @@ function openWrite(){
   document.getElementById('f-linktitle').value='';
   document.getElementById('f-body').innerHTML='';
   document.getElementById('f-font').value='';
+  applyEditorFont('');
   document.getElementById('wc-write').textContent='0 字';
   document.getElementById('write-lbl').textContent='📝 新的记录';
   document.getElementById('mob-write-lbl').textContent='新建日记';
@@ -1230,6 +1386,7 @@ function openEdit(){
   document.getElementById('f-linktitle').value=e.linkTitle||'';
   document.getElementById('f-body').innerHTML=e.bodyHtml||(e.body?esc(e.body).replace(/\n/g,'<br>'):'');
   document.getElementById('f-font').value=e.fontFamily||'';
+  applyEditorFont(e.fontFamily||'');
   updateWordCount();
   document.getElementById('write-lbl').textContent='✏️ 编辑记录';
   document.getElementById('mob-write-lbl').textContent='编辑日记';
@@ -1252,6 +1409,8 @@ async function saveEntry(){
   const wordCount=bodyText.replace(/\s/g,'').length;
   const entryId=st.editId||Date.now().toString();
   const origDate=st.editId?((data.entries||[]).find(x=>x.id===st.editId)||{}).date||new Date().toISOString():new Date().toISOString();
+  const storedImgs=[];
+  for(const src of st.pendingImgs){storedImgs.push(await saveImageToDb(src));}
   const entry={
     id:entryId,date:origDate,
     title:document.getElementById('f-title').value.trim(),
@@ -1260,7 +1419,7 @@ async function saveEntry(){
     url:document.getElementById('f-url').value.trim(),
     linkTitle:document.getElementById('f-linktitle').value.trim(),
     fontFamily:document.getElementById('f-font').value||'',
-    images:[...st.pendingImgs],
+    images:storedImgs,
     starred:st.editId?((data.entries||[]).find(x=>x.id===st.editId)||{}).starred||false:false,
   };
   if(!data.entries)data.entries=[];
@@ -1269,7 +1428,12 @@ async function saveEntry(){
     if(idx>-1)data.entries[idx]=entry;else data.entries.unshift(entry);
   }else{data.entries.unshift(entry);}
   st.editId=null;st.pendingImgs=[];st.entryId=entryId;
-  await saveAccData();
+  try{
+    await saveAccData();
+  }catch(e){
+    alert(e.message||'保存失败');
+    return;
+  }
   syncToGist();
   renderAll();
   viewEntry(entryId);
@@ -1281,9 +1445,10 @@ function applySelSize(size){
   if(!size)return;
   const editor=document.getElementById('f-body');editor.focus();
   const sel=window.getSelection();
-  if(sel&&!sel.isCollapsed&&sel.rangeCount&&editor.contains(sel.anchorNode)){
+  const range=getEditorRange();
+  if(range&&editor.contains(range.commonAncestorContainer)){
     try{
-      const range=sel.getRangeAt(0);
+      sel.removeAllRanges();sel.addRange(range);
       const frag=range.extractContents();
       const span=document.createElement('span');span.style.fontSize=size;span.appendChild(frag);
       range.insertNode(span);
@@ -1296,9 +1461,10 @@ function applySelFont(fontFamily){
   if(!fontFamily)return;
   const editor=document.getElementById('f-body');editor.focus();
   const sel=window.getSelection();
-  if(sel&&!sel.isCollapsed&&sel.rangeCount&&editor.contains(sel.anchorNode)){
+  const range=getEditorRange();
+  if(range&&editor.contains(range.commonAncestorContainer)){
     try{
-      const range=sel.getRangeAt(0);
+      sel.removeAllRanges();sel.addRange(range);
       const frag=range.extractContents();
       const span=document.createElement('span');span.style.fontFamily=fontFamily;span.appendChild(frag);
       range.insertNode(span);
@@ -1324,7 +1490,7 @@ function parseVideoUrl(url){
   return null;
 }
 
-function viewEntry(id){
+async function viewEntry(id){
   const e=(data.entries||[]).find(x=>x.id===id);
   if(!e){if(isMob())showMobPanel('list');else showPanel('panel-empty');return;}
   st.entryId=id;
@@ -1357,7 +1523,8 @@ function viewEntry(id){
   // Images
   const imgEl=document.getElementById('v-imgs');
   if(e.images&&e.images.length){
-    imgEl.innerHTML=e.images.map((src,i)=>`<img class="v-img" src="${src}" alt="图${i+1}" onclick="openImgModal('${src}','${esc(e.title||'无标题')}')">`).join('');
+    const resolved=await materializeImageList(e.images);
+    imgEl.innerHTML=resolved.map((src,i)=>`<img class="v-img" src="${src}" alt="图${i+1}" onclick="openImgModalByEncoded('${encodeURIComponent(src)}','${encodeURIComponent(e.title||'无标题')}')">`).join('');
     imgEl.style.display='flex';
   }else imgEl.style.display='none';
   // Content with font
@@ -1388,7 +1555,7 @@ function deleteEntry(){
   if(!confirm('确定删除这篇日记吗？'))return;
   data.entries=(data.entries||[]).filter(x=>x.id!==st.entryId);
   st.entryId=null;
-  saveAccData();syncToGist();renderAll();
+  saveAccData().catch(e=>alert(e.message||'保存失败'));syncToGist();renderAll();
   if(isMob())showMobPanel('list');else showPanel('panel-empty');
 }
 
@@ -1427,10 +1594,12 @@ function compressImg(file){
     r.onload=ev=>{
       const img=new Image();img.onerror=rej;
       img.onload=()=>{
-        const M=900;let w=img.width,h=img.height;
+        const M=1280;let w=img.width,h=img.height;
         if(w>M){h=Math.round(h*M/w);w=M;}if(h>M){w=Math.round(w*M/h);h=M;}
         const cv=document.createElement('canvas');cv.width=w;cv.height=h;
-        cv.getContext('2d').drawImage(img,0,0,w,h);res(cv.toDataURL('image/jpeg',.72));
+        cv.getContext('2d').drawImage(img,0,0,w,h);const webp=cv.toDataURL('image/webp',.68);
+        const jpeg=cv.toDataURL('image/jpeg',.62);
+        res(webp.length<jpeg.length?webp:jpeg);
       };img.src=ev.target.result;
     };r.readAsDataURL(file);
   });
@@ -1440,6 +1609,11 @@ function openImgModal(src,caption){
   document.getElementById('img-modal-caption').textContent='来自：'+caption+' · 点击关闭';
   document.getElementById('img-modal').classList.add('show');
 }
+function openImgModalByEncoded(srcEncoded,captionEncoded){
+  const src=decodeURIComponent(srcEncoded||'');
+  const caption=decodeURIComponent(captionEncoded||'');
+  openImgModal(src,caption);
+}
 function closeImgModal(){document.getElementById('img-modal').classList.remove('show');}
 
 /* ===== ALBUM ===== */
@@ -1448,7 +1622,7 @@ function showAlbum(){
   if(isMob()){showMobPanel('album');setNavActive('album');}
   else showPanel('panel-album');
 }
-function renderAlbum(){
+async function renderAlbum(){
   const body=document.getElementById('album-body');
   const allImgs=[];
   (data.entries||[]).forEach(e=>{
@@ -1464,23 +1638,34 @@ function renderAlbum(){
     if(!groups[key])groups[key]=[];
     groups[key].push(item);
   });
-  body.innerHTML=Object.entries(groups).map(([month,items])=>`
+  const blocks=await Promise.all(Object.entries(groups).map(async ([month,items])=>{
+    const resolved=await materializeImageList(items.map(i=>i.src));
+    return `
     <div class="album-month">${month} · ${items.length}张</div>
     <div class="album-grid">
-      ${items.map(item=>`<img class="album-img" src="${item.src}" alt="${esc(item.title)}" onclick="openImgModal('${item.src}','${esc(item.title)}')" title="${esc(item.title)}">`).join('')}
-    </div>`).join('');
+      ${items.map((item,idx)=>`<img class="album-img" src="${resolved[idx]}" alt="${esc(item.title)}" onclick="openImgModalByEncoded('${encodeURIComponent(resolved[idx]||'')}','${encodeURIComponent(item.title)}')" title="${esc(item.title)}">`).join('')}
+    </div>`;
+  }));
+  body.innerHTML=blocks.join('');
 }
 
 /* ===== TIMELINE ===== */
 function showTimeline(){
+  const inp=document.getElementById('tl-after');if(inp)inp.value=st.tlAfter||'';
   renderTimeline();
   if(isMob()){showMobPanel('timeline');setNavActive('more');}
   else showPanel('panel-timeline');
 }
+function setTimelineAfter(v){st.tlAfter=v||'';renderTimeline();}
+function clearTimelineAfter(){st.tlAfter='';const inp=document.getElementById('tl-after');if(inp)inp.value='';renderTimeline();}
 function renderTimeline(){
   const body=document.getElementById('tl-body');
-  const entries=data.entries||[];
-  if(!entries.length){body.innerHTML='<div class="tl-empty">还没有日记</div>';return;}
+  let entries=data.entries||[];
+  if(st.tlAfter){
+    const start=new Date(st.tlAfter+'T00:00:00');
+    entries=entries.filter(e=>new Date(e.date)>=start);
+  }
+  if(!entries.length){body.innerHTML='<div class="tl-empty">没有符合条件的日记</div>';return;}
   // Group by year/month
   const years={};
   entries.forEach(e=>{
@@ -1503,6 +1688,22 @@ function renderTimeline(){
           </div>`).join('')}
       </div>`).join('')}
   `).join('');
+}
+
+
+async function refreshStorageStats(){
+  const el=document.getElementById('storage-stats');
+  if(!el||!navigator.storage?.estimate){if(el)el.textContent='当前浏览器不支持容量估算';return;}
+  try{
+    const {usage=0,quota=0}=await navigator.storage.estimate();
+    const u=(usage/1024/1024).toFixed(2), q=(quota/1024/1024).toFixed(2);
+    const p=quota?Math.round(usage*100/quota):0;
+    el.textContent=`已用 ${u} MB / ${q} MB（${p}%）`;
+    el.style.color=p>=85?'var(--red)':(p>=70?'var(--gold)':'var(--tx3)');
+  }catch{el.textContent='容量估算失败';}
+}
+function roughSizeOfData(){
+  try{return new Blob([JSON.stringify(data)]).size;}catch{return 0;}
 }
 
 /* ===== GIST SYNC ===== */
@@ -1553,8 +1754,8 @@ async function syncFromGist(showMsg){
   if(!syncToken||!syncGistId)return;
   try{
     const gist=await gistApi('GET','/gists/'+syncGistId);
-    if(!gist?.files?.[GIST_FILE])return;
-    const raw=gist.files[GIST_FILE].content;
+    const raw=(gist?.files?.[GIST_FILE]?.content)||(gist?.files?.[GIST_BAK_FILE]?.content);
+    if(!raw)return;
     if(!raw||raw==='{}')return;
     const remote=JSON.parse(raw);
     if(!remote.encData)return;
@@ -1562,7 +1763,8 @@ async function syncFromGist(showMsg){
     const acc=storeGetAcc(curAccId);
     const localUpdated=acc?.updated||0;
     if(remoteUpdated>localUpdated){
-      storeUpdateAcc(curAccId,{data:remote.encData,updated:remoteUpdated});
+      const packed=await saveAccCipherToDb(remote.encData);
+      storeUpdateAcc(curAccId,{data:packed,updated:remoteUpdated});
       const plain=await aesDec(CKEY,remote.encData);
       data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:data.syncConfig,...JSON.parse(plain)};
       renderAll();
@@ -1577,8 +1779,11 @@ async function syncToGist(){
   try{
     const acc=storeGetAcc(curAccId);
     if(!acc?.data)return;
+    const encData=await readAccCipher(acc.data);
+    if(!encData)return;
+    const payload=JSON.stringify({encData,updated:Date.now()});
     await gistApi('PATCH','/gists/'+syncGistId,{
-      files:{[GIST_FILE]:{content:JSON.stringify({encData:acc.data,updated:Date.now()})}}
+      files:{[GIST_FILE]:{content:payload},[GIST_BAK_FILE]:{content:payload}}
     });
   }catch{}
 }
