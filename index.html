@@ -562,7 +562,7 @@ genAppIcon();
         </div>
         <div class="form-g">
           <label class="f-lbl">默认字体（整篇）</label>
-          <select class="f-sel" id="f-font">
+          <select class="f-sel" id="f-font" onchange="applyEditorFont(this.value)">
             <option value="">跟随全局设置</option>
             <option value="f-songti">宋体（Songti SC）</option>
             <option value="f-kaiti">楷体（Kaiti SC）</option>
@@ -727,16 +727,18 @@ function storeGet(){
 }
 function storeSet(hb){
   window.__HB__=hb;
-  try{document.getElementById('hb-store').textContent='var __HB__='+JSON.stringify(hb)+';';}catch{}
-  try{localStorage.setItem('hb_v3',JSON.stringify(hb));}catch{}
+  const payload=JSON.stringify(hb);
+  try{document.getElementById('hb-store').textContent='var __HB__='+payload+';';}catch{}
+  try{localStorage.setItem('hb_v3',payload);return true;}
+  catch{return false;}
 }
 function storeGetAcc(id){return storeGet().accounts.find(a=>a.id===id)||null;}
 function storeUpdateAcc(id,patch){
   const hb=storeGet();
   const idx=hb.accounts.findIndex(a=>a.id===id);
-  if(idx<0)return;
+  if(idx<0)return false;
   hb.accounts[idx]={...hb.accounts[idx],...patch};
-  storeSet(hb);
+  return storeSet(hb);
 }
 function storeAddAcc(acc){const hb=storeGet();hb.accounts.push(acc);storeSet(hb);}
 function storeRemoveAcc(id){const hb=storeGet();hb.accounts=hb.accounts.filter(a=>a.id!==id);storeSet(hb);}
@@ -766,9 +768,11 @@ async function aesDec(key,b64){
   return new TextDecoder().decode(pt);
 }
 async function saveAccData(){
-  if(!CKEY||!curAccId)return;
+  if(!CKEY||!curAccId)return false;
   const enc=await aesEnc(CKEY,JSON.stringify(data));
-  storeUpdateAcc(curAccId,{data:enc,updated:Date.now()});
+  const ok=storeUpdateAcc(curAccId,{data:enc,updated:Date.now()});
+  if(!ok)throw new Error('本地存储空间不足，数据未能保存。请减少图片数量/大小后重试。');
+  return true;
 }
 
 /* ===== REMEMBER PASSWORD ===== */
@@ -1045,12 +1049,26 @@ function showPanel(id){
 
 /* ===== FONT ===== */
 function applyGlobalFont(fontId){
-  document.getElementById('f-editor')&&(document.getElementById('f-body').className='f-editor'+(fontId?' '+fontId:''));
-  const vc=document.getElementById('v-content');
-  if(vc){vc.className='v-content'+(fontId?' '+fontId:'');}
   data.settings=data.settings||{};
   data.settings.defaultFont=fontId;
+
+  applyEditorFont(document.getElementById('f-font')?.value||'');
+
+  const vc=document.getElementById('v-content');
+  if(vc){
+    const cur=(data.entries||[]).find(x=>x.id===st.entryId);
+    const picked=cur?.fontFamily||fontId||'';
+    vc.className='v-content'+(picked?' '+picked:'');
+  }
 }
+
+function applyEditorFont(fontId){
+  const body=document.getElementById('f-body');
+  if(!body)return;
+  const picked=fontId||(data.settings?.defaultFont||'');
+  body.className='f-editor'+(picked?' '+picked:'');
+}
+
 function renderMoreFonts(){
   const el=document.getElementById('more-font-grid');
   if(!el)return;
@@ -1059,9 +1077,10 @@ function renderMoreFonts(){
 }
 function setGlobalFont(fontId){
   applyGlobalFont(fontId);
-  saveAccData();
+  saveAccData().catch(e=>alert(e.message||'保存失败'));
   renderMoreFonts();
-  showToast('字体已切换：'+FONTS.find(f=>f.id===fontId)?.label);
+  const picked=FONTS.find(f=>f.id===fontId)?.label||'跟随系统';
+  showToast('字体已切换：'+picked);
 }
 
 /* ===== RENDER ALL ===== */
@@ -1158,7 +1177,7 @@ function mobAddCol(){
   if(!name||!name.trim())return;
   if(!data.columns)data.columns=[];
   data.columns.push({id:Date.now().toString(),name:name.trim().slice(0,10),color:COL_COLORS[data.columns.length%COL_COLORS.length]});
-  saveAccData();renderAll();
+  saveAccData().catch(e=>alert(e.message||'保存失败'));renderAll();
   showToast('专栏「'+name.trim().slice(0,10)+'」已创建');
 }
 function mobFilterCol(id){st.colId=id;renderAll();}
@@ -1176,7 +1195,7 @@ function addColumn(){
   if(!name)return;
   if(!data.columns)data.columns=[];
   data.columns.push({id:Date.now().toString(),name,color:COL_COLORS[data.columns.length%COL_COLORS.length]});
-  saveAccData();
+  saveAccData().catch(e=>alert(e.message||'保存失败'));
   document.getElementById('col-inp').value='';
   document.getElementById('col-form').classList.remove('show');
   renderAll();
@@ -1190,7 +1209,7 @@ function deleteCol(id){
   data.columns=(data.columns||[]).filter(c=>c.id!==id);
   (data.entries||[]).forEach(e=>{if(e.colId===id)e.colId=null;});
   if(st.colId===id)st.colId='__all__';
-  saveAccData();renderAll();
+  saveAccData().catch(e=>alert(e.message||'保存失败'));renderAll();
 }
 
 /* ===== WRITE ===== */
@@ -1210,6 +1229,7 @@ function openWrite(){
   document.getElementById('f-linktitle').value='';
   document.getElementById('f-body').innerHTML='';
   document.getElementById('f-font').value='';
+  applyEditorFont('');
   document.getElementById('wc-write').textContent='0 字';
   document.getElementById('write-lbl').textContent='📝 新的记录';
   document.getElementById('mob-write-lbl').textContent='新建日记';
@@ -1230,6 +1250,7 @@ function openEdit(){
   document.getElementById('f-linktitle').value=e.linkTitle||'';
   document.getElementById('f-body').innerHTML=e.bodyHtml||(e.body?esc(e.body).replace(/\n/g,'<br>'):'');
   document.getElementById('f-font').value=e.fontFamily||'';
+  applyEditorFont(e.fontFamily||'');
   updateWordCount();
   document.getElementById('write-lbl').textContent='✏️ 编辑记录';
   document.getElementById('mob-write-lbl').textContent='编辑日记';
@@ -1269,7 +1290,12 @@ async function saveEntry(){
     if(idx>-1)data.entries[idx]=entry;else data.entries.unshift(entry);
   }else{data.entries.unshift(entry);}
   st.editId=null;st.pendingImgs=[];st.entryId=entryId;
-  await saveAccData();
+  try{
+    await saveAccData();
+  }catch(e){
+    alert(e.message||'保存失败');
+    return;
+  }
   syncToGist();
   renderAll();
   viewEntry(entryId);
@@ -1357,7 +1383,7 @@ function viewEntry(id){
   // Images
   const imgEl=document.getElementById('v-imgs');
   if(e.images&&e.images.length){
-    imgEl.innerHTML=e.images.map((src,i)=>`<img class="v-img" src="${src}" alt="图${i+1}" onclick="openImgModal('${src}','${esc(e.title||'无标题')}')">`).join('');
+    imgEl.innerHTML=e.images.map((src,i)=>`<img class="v-img" src="${src}" alt="图${i+1}" onclick="openImgModalByEncoded('${encodeURIComponent(src)}','${encodeURIComponent(e.title||'无标题')}')">`).join('');
     imgEl.style.display='flex';
   }else imgEl.style.display='none';
   // Content with font
@@ -1388,7 +1414,7 @@ function deleteEntry(){
   if(!confirm('确定删除这篇日记吗？'))return;
   data.entries=(data.entries||[]).filter(x=>x.id!==st.entryId);
   st.entryId=null;
-  saveAccData();syncToGist();renderAll();
+  saveAccData().catch(e=>alert(e.message||'保存失败'));syncToGist();renderAll();
   if(isMob())showMobPanel('list');else showPanel('panel-empty');
 }
 
@@ -1427,10 +1453,12 @@ function compressImg(file){
     r.onload=ev=>{
       const img=new Image();img.onerror=rej;
       img.onload=()=>{
-        const M=900;let w=img.width,h=img.height;
+        const M=1280;let w=img.width,h=img.height;
         if(w>M){h=Math.round(h*M/w);w=M;}if(h>M){w=Math.round(w*M/h);h=M;}
         const cv=document.createElement('canvas');cv.width=w;cv.height=h;
-        cv.getContext('2d').drawImage(img,0,0,w,h);res(cv.toDataURL('image/jpeg',.72));
+        cv.getContext('2d').drawImage(img,0,0,w,h);const webp=cv.toDataURL('image/webp',.68);
+        const jpeg=cv.toDataURL('image/jpeg',.62);
+        res(webp.length<jpeg.length?webp:jpeg);
       };img.src=ev.target.result;
     };r.readAsDataURL(file);
   });
@@ -1439,6 +1467,11 @@ function openImgModal(src,caption){
   document.getElementById('img-modal-img').src=src;
   document.getElementById('img-modal-caption').textContent='来自：'+caption+' · 点击关闭';
   document.getElementById('img-modal').classList.add('show');
+}
+function openImgModalByEncoded(srcEncoded,captionEncoded){
+  const src=decodeURIComponent(srcEncoded||'');
+  const caption=decodeURIComponent(captionEncoded||'');
+  openImgModal(src,caption);
 }
 function closeImgModal(){document.getElementById('img-modal').classList.remove('show');}
 
@@ -1467,7 +1500,7 @@ function renderAlbum(){
   body.innerHTML=Object.entries(groups).map(([month,items])=>`
     <div class="album-month">${month} · ${items.length}张</div>
     <div class="album-grid">
-      ${items.map(item=>`<img class="album-img" src="${item.src}" alt="${esc(item.title)}" onclick="openImgModal('${item.src}','${esc(item.title)}')" title="${esc(item.title)}">`).join('')}
+      ${items.map(item=>`<img class="album-img" src="${item.src}" alt="${esc(item.title)}" onclick="openImgModalByEncoded('${encodeURIComponent(item.src)}','${encodeURIComponent(item.title)}')" title="${esc(item.title)}">`).join('')}
     </div>`).join('');
 }
 
