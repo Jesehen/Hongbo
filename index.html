@@ -723,7 +723,7 @@ const HB_BAK_KEYS=['hb_v3_bak1','hb_v3_bak2'];
 let CKEY=null, curAccId=null, selAccId=null;
 let data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:null};
 let st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:'',tlAfter:'',tlBefore:''};
-let syncToken=null, syncGistId=null;
+let syncToken=null, syncGistId=null, syncGistOwner=null;
 
 let lastEditorRange=null;
 function cacheEditorSelection(){
@@ -1117,7 +1117,7 @@ function enterApp(){
   document.getElementById('s-inp').value='';
   document.getElementById('mob-s-inp').value='';
   renderAll();
-  if(data.syncConfig){syncToken=data.syncConfig.token;syncGistId=data.syncConfig.gistId;}
+  if(data.syncConfig){syncToken=data.syncConfig.token;syncGistId=data.syncConfig.gistId;syncGistOwner=data.syncConfig.owner||null;}
   if(document.getElementById('sync-token-inp'))document.getElementById('sync-token-inp').value=syncToken||'';
   if(syncToken&&syncGistId)syncFromGist(false);
   refreshStorageStats();
@@ -1141,7 +1141,7 @@ function doSwitchAcc(){
   CKEY=null;curAccId=null;
   data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:null};
   st={colId:'__all__',entryId:null,editId:null,q:'',mobQ:'',pendingImgs:[],curViewUrl:'',tlAfter:'',tlBefore:'',albumBefore:'',albumAfter:''};
-  syncToken=null;syncGistId=null;
+  syncToken=null;syncGistId=null;syncGistOwner=null;
   showAccList(true);
 }
 </script>
@@ -1714,7 +1714,7 @@ function roughSizeOfData(){
   try{return new Blob([JSON.stringify(data)]).size;}catch{return 0;}
 }
 
-async function gistApi(method,path,body){
+async function gistApi(method,path,body,discardResponse=false){
   if(!syncToken)return null;
   try{
     const r=await fetch('https://api.github.com'+path,{
@@ -1723,45 +1723,56 @@ async function gistApi(method,path,body){
       body:body?JSON.stringify(body):undefined
     });
     if(!r.ok)return null;
+    if(discardResponse){
+      try{if(r.body)await r.body.cancel();}catch{}
+      return {ok:true};
+    }
     return await r.json();
   }catch{return null;}
 }
-async function readGistFile(file){
-  if(!file)return '';
-  if(typeof file.content==='string'&&!file.truncated)return file.content;
-  if(!file.raw_url)return '';
-  const r=await fetch(file.raw_url,{cache:'no-store'});
+async function ensureSyncGistOwner(){
+  if(syncGistOwner)return syncGistOwner;
+  const me=await gistApi('GET','/user');
+  syncGistOwner=me?.login||null;
+  return syncGistOwner;
+}
+function gistRawFileUrl(name){
+  if(!syncGistOwner||!syncGistId)return '';
+  return 'https://gist.githubusercontent.com/'+encodeURIComponent(syncGistOwner)+'/'+encodeURIComponent(syncGistId)+'/raw/'+encodeURIComponent(name)+'?t='+Date.now();
+}
+async function readGistRawFile(name){
+  const url=gistRawFileUrl(name);
+  if(!url)return '';
+  const r=await fetch(url,{cache:'no-store'});
+  if(r.status===404)return '';
   if(!r.ok)throw new Error('云端文件读取失败');
   return await r.text();
 }
-async function syncImagesToGist(gist){
+async function syncImagesToGist(){
   if(!CKEY)return {uploaded:0,skipped:0};
-  const files=gist?.files||{},refs=allCloudImageRefs();
+  const refs=allCloudImageRefs(),synced=new Set(Array.isArray(data.cloudImageRefs)?data.cloudImageRefs:[]);
   let uploaded=0,skipped=0;
   for(const src of refs){
-    const name=cloudImageFileName(src);
-    if(files[name]){skipped++;continue;}
+    if(synced.has(src)){skipped++;continue;}
     const blob=await getImageBlob(src);
     if(!blob)continue;
     const dataUrl=await blobToDataUrl(blob);
     const encrypted=await aesEnc(CKEY,dataUrl);
     if(encrypted.length>CLOUD_IMG_MAX_CIPHER)throw new Error('有一张图片过大，无法上传云端');
-    const updated=await gistApi('PATCH','/gists/'+syncGistId,{files:{[name]:{content:encrypted}}});
+    const updated=await gistApi('PATCH','/gists/'+syncGistId,{files:{[cloudImageFileName(src)]:{content:encrypted}}},true);
     if(!updated)throw new Error('图片上传失败，请检查网络或 Token');
-    files[name]=updated.files?.[name]||{filename:name};
-    uploaded++;
+    synced.add(src);uploaded++;
   }
+  data.cloudImageRefs=refs.filter(src=>synced.has(src));
   return {uploaded,skipped};
 }
-async function restoreImagesFromGist(gist){
+async function restoreImagesFromGist(){
   if(!CKEY)return {restored:0,missing:0};
-  const files=gist?.files||{},refs=allCloudImageRefs();
+  const refs=allCloudImageRefs();
   let restored=0,missing=0;
   for(const src of refs){
     if(await getImageBlob(src))continue;
-    const file=files[cloudImageFileName(src)];
-    if(!file){missing++;continue;}
-    const encrypted=await readGistFile(file);
+    const encrypted=await readGistRawFile(cloudImageFileName(src));
     if(!encrypted){missing++;continue;}
     const dataUrl=await aesDec(CKEY,encrypted);
     if(!dataUrl.startsWith('data:image/'))throw new Error('云端图片格式异常');
@@ -1786,44 +1797,48 @@ async function setupSync(){
   try{
     const r=await fetch('https://api.github.com/user',{headers:{'Authorization':'token '+token}});
     if(!r.ok)throw new Error('Token无效');
-    syncToken=token;
+    const me=await r.json();
+    syncToken=token;syncGistOwner=me?.login||null;
     const gistId=await findOrCreateGist();
     if(!gistId)throw new Error('Gist创建失败');
     syncGistId=gistId;
-    data.syncConfig={token,gistId};
+    data.syncConfig={token,gistId,owner:syncGistOwner};
     await saveAccData();
     statusEl.textContent='✅ 已连接，正在同步…';statusEl.style.color='var(--green)';
     const pushed=await syncToGist();
     if(!pushed)throw new Error('云端写入失败');
-    await syncFromGist(true);
     statusEl.textContent='✅ 数据与图片同步成功';
     showToast('🔄 双端同步已开启');
   }catch(e){
     statusEl.textContent='❌ '+e.message;statusEl.style.color='var(--red)';
-    syncToken=null;syncGistId=null;
+    syncToken=null;syncGistId=null;syncGistOwner=null;
   }
 }
 async function syncNow(){
   if(!syncToken||!syncGistId){showToast('请先连接 Token');return;}
   const statusEl=document.getElementById('sync-status');
   if(statusEl){statusEl.textContent='同步中…';statusEl.style.color='var(--gold)';}
+  const pulled=await syncFromGist(false);
+  if(!pulled){
+    if(statusEl){statusEl.textContent='❌ 云端读取失败，请检查网络';statusEl.style.color='var(--red)';}
+    showToast('❌ 云端读取失败');return;
+  }
   const pushed=await syncToGist();
   if(!pushed){
     if(statusEl){statusEl.textContent='❌ 上传失败，请检查网络或 Token';statusEl.style.color='var(--red)';}
     showToast('❌ 云端上传失败');return;
   }
-  await syncFromGist(true);
   if(statusEl){statusEl.textContent='✅ 数据与图片同步完成';statusEl.style.color='var(--green)';}
+  showToast(pulled.restored?'☁️ 已恢复 '+pulled.restored+' 张图片并完成同步':'✅ 数据与图片同步完成');
 }
 async function syncFromGist(showMsg){
   if(!syncToken||!syncGistId)return null;
   try{
-    const gist=await gistApi('GET','/gists/'+syncGistId);
-    if(!gist)throw new Error('云端连接失败');
-    const raw=(await readGistFile(gist.files?.[GIST_FILE]))||(await readGistFile(gist.files?.[GIST_BAK_FILE]));
-    if(!raw||raw==='{}')return {updated:false,restored:0};
+    if(!await ensureSyncGistOwner())throw new Error('无法读取 GitHub 账号');
+    const raw=(await readGistRawFile(GIST_FILE))||(await readGistRawFile(GIST_BAK_FILE));
+    if(!raw||raw==='{}')return {updated:false,restored:0,missing:0};
     const remote=JSON.parse(raw);
-    if(!remote.encData)return {updated:false,restored:0};
+    if(!remote.encData)return {updated:false,restored:0,missing:0};
     const remoteUpdated=remote.updated||0;
     const acc=storeGetAcc(curAccId);
     const localUpdated=acc?.updated||0;
@@ -1833,9 +1848,10 @@ async function syncFromGist(showMsg){
       storeUpdateAcc(curAccId,{data:packed,updated:remoteUpdated});
       const plain=await aesDec(CKEY,remote.encData);
       data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:data.syncConfig,...JSON.parse(plain)};
+      data.syncConfig={...(data.syncConfig||{}),token:syncToken,gistId:syncGistId,owner:syncGistOwner};
       updated=true;
     }
-    const imageResult=await restoreImagesFromGist(gist);
+    const imageResult=await restoreImagesFromGist();
     if(updated||imageResult.restored)renderAll();
     if(showMsg){
       if(updated&&imageResult.restored)showToast('☁️ 数据和 '+imageResult.restored+' 张图片已恢复');
@@ -1845,6 +1861,7 @@ async function syncFromGist(showMsg){
     }
     return {updated,restored:imageResult.restored,missing:imageResult.missing};
   }catch(e){
+    console.error('syncFromGist error:',e);
     if(showMsg)showToast('❌ '+(e.message||'云端恢复失败'));
     return null;
   }
@@ -1852,17 +1869,18 @@ async function syncFromGist(showMsg){
 async function syncToGist(){
   if(!syncToken||!syncGistId)return null;
   try{
+    if(!await ensureSyncGistOwner())throw new Error('无法读取 GitHub 账号');
+    data.syncConfig={...(data.syncConfig||{}),token:syncToken,gistId:syncGistId,owner:syncGistOwner};
+    const imageResult=await syncImagesToGist();
+    if(imageResult.uploaded)await saveAccData();
     const acc=storeGetAcc(curAccId);
     if(!acc?.data)return null;
     const encData=await readAccCipher(acc.data);
     if(!encData)return null;
-    const gist=await gistApi('GET','/gists/'+syncGistId);
-    if(!gist)throw new Error('云端连接失败');
-    const imageResult=await syncImagesToGist(gist);
-    const payload=JSON.stringify({encData,salt:acc.salt,ver:acc.ver,updated:Date.now(),imageSyncVersion:1,imageCount:allCloudImageRefs().length});
+    const payload=JSON.stringify({encData,salt:acc.salt,ver:acc.ver,updated:Date.now(),imageSyncVersion:2,imageCount:allCloudImageRefs().length});
     const saved=await gistApi('PATCH','/gists/'+syncGistId,{
       files:{[GIST_FILE]:{content:payload},[GIST_BAK_FILE]:{content:payload}}
-    });
+    },true);
     if(!saved)throw new Error('日记数据上传失败');
     return {uploaded:imageResult.uploaded};
   }catch(e){
@@ -1896,10 +1914,12 @@ async function restoreFromToken(){
   const token=prompt('输入 GitHub Token：');
   if(!token?.trim())return;
   syncToken=token.trim();
+  syncGistOwner=await ensureSyncGistOwner();
+  if(!syncGistOwner){alert('Token 无效或无法读取账号');syncToken=null;return;}
   const gistId=await findOrCreateGist();
   if(!gistId){alert('未找到云端数据');syncToken=null;return;}
-  const gist=await gistApi('GET','/gists/'+gistId);
-  const raw=(await readGistFile(gist?.files?.[GIST_FILE]))||(await readGistFile(gist?.files?.[GIST_BAK_FILE]));
+  syncGistId=gistId;
+  const raw=(await readGistRawFile(GIST_FILE))||(await readGistRawFile(GIST_BAK_FILE));
   if(!raw||raw==='{}'){alert('云端暂无数据');syncToken=null;return;}
   const remote=JSON.parse(raw);
   if(!remote.salt||!remote.ver||!remote.encData){alert('云端数据格式异常，请先在原设备点一次"立即同步"推送数据');syncToken=null;return;}
@@ -1917,9 +1937,8 @@ async function restoreFromToken(){
     CKEY=key;curAccId=id;
     const plain=await aesDec(key,remote.encData);
     data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:null,...JSON.parse(plain)};
-    data.syncConfig={token:token.trim(),gistId};
-    syncGistId=gistId;
-    const imageResult=await restoreImagesFromGist(gist);
+    data.syncConfig={token:token.trim(),gistId,owner:syncGistOwner};
+    const imageResult=await restoreImagesFromGist();
     await saveAccData();
     enterApp();
     showToast(imageResult.restored?'☁️ 账号及 '+imageResult.restored+' 张图片已恢复':'☁️ 账号已从云端恢复');
