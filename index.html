@@ -678,7 +678,7 @@ genAppIcon();
       </div>
       <div class="sync-section">
         <div class="sync-title">🔄 双端同步</div>
-        <div class="sync-desc">连接 GitHub Token（需 gist 权限），手机和电脑日记自动同步。Token 仅保存在本地加密数据中。</div>
+        <div class="sync-desc">连接 GitHub Token（需 gist 权限），日记和图片会先加密再同步；新设备恢复账号时会自动恢复图片。Token 仅保存在本地加密数据中。</div>
         <input class="sync-inp" type="password" id="sync-token-inp" placeholder="粘贴 GitHub Token…">
         <div class="sync-btns">
           <button class="sync-btn primary" onclick="setupSync()">连接</button>
@@ -744,6 +744,7 @@ function getEditorRange(){
 }
 
 const IMG_DB='hongbo_img_v1', IMG_STORE='images', ACC_STORE='accdata';
+const CLOUD_IMG_PREFIX='hongbo_img_', CLOUD_IMG_MAX_CIPHER=9*1024*1024;
 let imgDbPromise=null, imgUrlCache=new Map();
 function openImgDb(){
   if(imgDbPromise)return imgDbPromise;
@@ -776,6 +777,28 @@ async function getImageSrc(src){
   const blob=await new Promise((res,rej)=>{const tx=db.transaction(IMG_STORE,'readonly');const r=tx.objectStore(IMG_STORE).get(id);r.onsuccess=()=>res(r.result||null);r.onerror=()=>rej(r.error);});
   if(!blob)return '';
   const url=URL.createObjectURL(blob);imgUrlCache.set(src,url);return url;
+}
+async function getImageBlob(src){
+  if(!src||!src.startsWith('idb:'))return null;
+  const db=await openImgDb(),id=src.slice(4);
+  return new Promise((res,rej)=>{const tx=db.transaction(IMG_STORE,'readonly');const r=tx.objectStore(IMG_STORE).get(id);r.onsuccess=()=>res(r.result||null);r.onerror=()=>rej(r.error);});
+}
+function blobToDataUrl(blob){
+  return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(r.error);r.readAsDataURL(blob);});
+}
+async function putCloudImageInDb(src,dataUrl){
+  if(!src?.startsWith('idb:')||!dataUrl?.startsWith('data:image/'))return false;
+  const db=await openImgDb(),id=src.slice(4),blob=dataUrlToBlob(dataUrl);
+  await new Promise((res,rej)=>{const tx=db.transaction(IMG_STORE,'readwrite');tx.objectStore(IMG_STORE).put(blob,id);tx.oncomplete=res;tx.onerror=()=>rej(tx.error);});
+  const cached=imgUrlCache.get(src);if(cached){URL.revokeObjectURL(cached);imgUrlCache.delete(src);}
+  return true;
+}
+function cloudImageFileName(src){
+  const id=String(src||'').replace(/^idb:/,'').replace(/[^a-zA-Z0-9_-]/g,'_');
+  return CLOUD_IMG_PREFIX+id+'.enc';
+}
+function allCloudImageRefs(){
+  return [...new Set((data.entries||[]).flatMap(e=>Array.isArray(e.images)?e.images:[]).filter(src=>typeof src==='string'&&src.startsWith('idb:')))];
 }
 async function materializeImageList(list){
   return Promise.all((list||[]).map(getImageSrc));
@@ -1703,6 +1726,50 @@ async function gistApi(method,path,body){
     return await r.json();
   }catch{return null;}
 }
+async function readGistFile(file){
+  if(!file)return '';
+  if(typeof file.content==='string'&&!file.truncated)return file.content;
+  if(!file.raw_url)return '';
+  const r=await fetch(file.raw_url,{cache:'no-store'});
+  if(!r.ok)throw new Error('云端文件读取失败');
+  return await r.text();
+}
+async function syncImagesToGist(gist){
+  if(!CKEY)return {uploaded:0,skipped:0};
+  const files=gist?.files||{},refs=allCloudImageRefs();
+  let uploaded=0,skipped=0;
+  for(const src of refs){
+    const name=cloudImageFileName(src);
+    if(files[name]){skipped++;continue;}
+    const blob=await getImageBlob(src);
+    if(!blob)continue;
+    const dataUrl=await blobToDataUrl(blob);
+    const encrypted=await aesEnc(CKEY,dataUrl);
+    if(encrypted.length>CLOUD_IMG_MAX_CIPHER)throw new Error('有一张图片过大，无法上传云端');
+    const updated=await gistApi('PATCH','/gists/'+syncGistId,{files:{[name]:{content:encrypted}}});
+    if(!updated)throw new Error('图片上传失败，请检查网络或 Token');
+    files[name]=updated.files?.[name]||{filename:name};
+    uploaded++;
+  }
+  return {uploaded,skipped};
+}
+async function restoreImagesFromGist(gist){
+  if(!CKEY)return {restored:0,missing:0};
+  const files=gist?.files||{},refs=allCloudImageRefs();
+  let restored=0,missing=0;
+  for(const src of refs){
+    if(await getImageBlob(src))continue;
+    const file=files[cloudImageFileName(src)];
+    if(!file){missing++;continue;}
+    const encrypted=await readGistFile(file);
+    if(!encrypted){missing++;continue;}
+    const dataUrl=await aesDec(CKEY,encrypted);
+    if(!dataUrl.startsWith('data:image/'))throw new Error('云端图片格式异常');
+    await putCloudImageInDb(src,dataUrl);
+    restored++;
+  }
+  return {restored,missing};
+}
 async function findOrCreateGist(){
   const gists=await gistApi('GET','/gists?per_page=100');
   if(!Array.isArray(gists))return null;
@@ -1726,9 +1793,10 @@ async function setupSync(){
     data.syncConfig={token,gistId};
     await saveAccData();
     statusEl.textContent='✅ 已连接，正在同步…';statusEl.style.color='var(--green)';
-    await syncToGist();
+    const pushed=await syncToGist();
+    if(!pushed)throw new Error('云端写入失败');
     await syncFromGist(true);
-    statusEl.textContent='✅ 同步成功';
+    statusEl.textContent='✅ 数据与图片同步成功';
     showToast('🔄 双端同步已开启');
   }catch(e){
     statusEl.textContent='❌ '+e.message;statusEl.style.color='var(--red)';
@@ -1739,45 +1807,68 @@ async function syncNow(){
   if(!syncToken||!syncGistId){showToast('请先连接 Token');return;}
   const statusEl=document.getElementById('sync-status');
   if(statusEl){statusEl.textContent='同步中…';statusEl.style.color='var(--gold)';}
-  await syncToGist();
+  const pushed=await syncToGist();
+  if(!pushed){
+    if(statusEl){statusEl.textContent='❌ 上传失败，请检查网络或 Token';statusEl.style.color='var(--red)';}
+    showToast('❌ 云端上传失败');return;
+  }
   await syncFromGist(true);
-  if(statusEl){statusEl.textContent='✅ 双向同步完成';statusEl.style.color='var(--green)';}
+  if(statusEl){statusEl.textContent='✅ 数据与图片同步完成';statusEl.style.color='var(--green)';}
 }
 async function syncFromGist(showMsg){
-  if(!syncToken||!syncGistId)return;
+  if(!syncToken||!syncGistId)return null;
   try{
     const gist=await gistApi('GET','/gists/'+syncGistId);
-    const raw=(gist?.files?.[GIST_FILE]?.content)||(gist?.files?.[GIST_BAK_FILE]?.content);
-    if(!raw||raw==='{}')return;
+    if(!gist)throw new Error('云端连接失败');
+    const raw=(await readGistFile(gist.files?.[GIST_FILE]))||(await readGistFile(gist.files?.[GIST_BAK_FILE]));
+    if(!raw||raw==='{}')return {updated:false,restored:0};
     const remote=JSON.parse(raw);
-    if(!remote.encData)return;
+    if(!remote.encData)return {updated:false,restored:0};
     const remoteUpdated=remote.updated||0;
     const acc=storeGetAcc(curAccId);
     const localUpdated=acc?.updated||0;
+    let updated=false;
     if(remoteUpdated>localUpdated){
       const packed=await saveAccCipherToDb(remote.encData);
       storeUpdateAcc(curAccId,{data:packed,updated:remoteUpdated});
       const plain=await aesDec(CKEY,remote.encData);
       data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:data.syncConfig,...JSON.parse(plain)};
-      renderAll();
-      if(showMsg)showToast('☁️ 已从云端同步最新数据');
-    }else{
-      if(showMsg)showToast('✅ 数据已是最新');
+      updated=true;
     }
-  }catch{}
+    const imageResult=await restoreImagesFromGist(gist);
+    if(updated||imageResult.restored)renderAll();
+    if(showMsg){
+      if(updated&&imageResult.restored)showToast('☁️ 数据和 '+imageResult.restored+' 张图片已恢复');
+      else if(updated)showToast('☁️ 已从云端同步最新数据');
+      else if(imageResult.restored)showToast('☁️ 已恢复 '+imageResult.restored+' 张图片');
+      else showToast('✅ 数据已是最新');
+    }
+    return {updated,restored:imageResult.restored,missing:imageResult.missing};
+  }catch(e){
+    if(showMsg)showToast('❌ '+(e.message||'云端恢复失败'));
+    return null;
+  }
 }
 async function syncToGist(){
-  if(!syncToken||!syncGistId)return;
+  if(!syncToken||!syncGistId)return null;
   try{
     const acc=storeGetAcc(curAccId);
-    if(!acc?.data)return;
+    if(!acc?.data)return null;
     const encData=await readAccCipher(acc.data);
-    if(!encData)return;
-    const payload=JSON.stringify({encData,salt:acc.salt,ver:acc.ver,updated:Date.now()});
-    await gistApi('PATCH','/gists/'+syncGistId,{
+    if(!encData)return null;
+    const gist=await gistApi('GET','/gists/'+syncGistId);
+    if(!gist)throw new Error('云端连接失败');
+    const imageResult=await syncImagesToGist(gist);
+    const payload=JSON.stringify({encData,salt:acc.salt,ver:acc.ver,updated:Date.now(),imageSyncVersion:1,imageCount:allCloudImageRefs().length});
+    const saved=await gistApi('PATCH','/gists/'+syncGistId,{
       files:{[GIST_FILE]:{content:payload},[GIST_BAK_FILE]:{content:payload}}
     });
-  }catch{}
+    if(!saved)throw new Error('日记数据上传失败');
+    return {uploaded:imageResult.uploaded};
+  }catch(e){
+    console.error('syncToGist error:',e);
+    return null;
+  }
 }
 
 function doExport(){
@@ -1808,7 +1899,7 @@ async function restoreFromToken(){
   const gistId=await findOrCreateGist();
   if(!gistId){alert('未找到云端数据');syncToken=null;return;}
   const gist=await gistApi('GET','/gists/'+gistId);
-  const raw=gist?.files?.[GIST_FILE]?.content;
+  const raw=(await readGistFile(gist?.files?.[GIST_FILE]))||(await readGistFile(gist?.files?.[GIST_BAK_FILE]));
   if(!raw||raw==='{}'){alert('云端暂无数据');syncToken=null;return;}
   const remote=JSON.parse(raw);
   if(!remote.salt||!remote.ver||!remote.encData){alert('云端数据格式异常，请先在原设备点一次"立即同步"推送数据');syncToken=null;return;}
@@ -1828,9 +1919,10 @@ async function restoreFromToken(){
     data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:null,...JSON.parse(plain)};
     data.syncConfig={token:token.trim(),gistId};
     syncGistId=gistId;
+    const imageResult=await restoreImagesFromGist(gist);
     await saveAccData();
     enterApp();
-    showToast('☁️ 账号已从云端恢复');
+    showToast(imageResult.restored?'☁️ 账号及 '+imageResult.restored+' 张图片已恢复':'☁️ 账号已从云端恢复');
   }catch(e){alert('恢复失败：'+(e.message||'密码可能有误'));syncToken=null;}
 }
 
