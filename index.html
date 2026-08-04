@@ -829,6 +829,46 @@ async function readAccCipher(ref){
   return await new Promise((res,rej)=>{const tx=db.transaction(ACC_STORE,'readonly');const r=tx.objectStore(ACC_STORE).get(id);r.onsuccess=()=>res(r.result||'');r.onerror=()=>rej(r.error);});
 }
 
+const PORTABLE_IMAGE_KEY_PREFIX='portable_images_';
+async function savePendingBackupImages(accId,images){
+  const db=await openImgDb(),key=PORTABLE_IMAGE_KEY_PREFIX+accId;
+  const valid=images&&typeof images==='object'&&!Array.isArray(images)?images:{};
+  await new Promise((res,rej)=>{
+    const tx=db.transaction(ACC_STORE,'readwrite');
+    if(Object.keys(valid).length)tx.objectStore(ACC_STORE).put(valid,key);
+    else tx.objectStore(ACC_STORE).delete(key);
+    tx.oncomplete=res;tx.onerror=()=>rej(tx.error);
+  });
+  return Object.keys(valid).length;
+}
+async function restorePendingBackupImages(accId,key){
+  const db=await openImgDb(),storeKey=PORTABLE_IMAGE_KEY_PREFIX+accId;
+  const bundle=await new Promise((res,rej)=>{const tx=db.transaction(ACC_STORE,'readonly');const r=tx.objectStore(ACC_STORE).get(storeKey);r.onsuccess=()=>res(r.result||null);r.onerror=()=>rej(r.error);});
+  if(!bundle||typeof bundle!=='object')return {restored:0,failed:0};
+  let restored=0,failed=0;const remaining={};
+  for(const [src,encrypted] of Object.entries(bundle)){
+    try{
+      if(!src.startsWith('idb:')||typeof encrypted!=='string')throw new Error('图片备份格式异常');
+      const dataUrl=await aesDec(key,encrypted);
+      if(!dataUrl.startsWith('data:image/'))throw new Error('图片备份格式异常');
+      await putCloudImageInDb(src,dataUrl);restored++;
+    }catch{remaining[src]=encrypted;failed++;}
+  }
+  await new Promise((res,rej)=>{
+    const tx=db.transaction(ACC_STORE,'readwrite');
+    if(Object.keys(remaining).length)tx.objectStore(ACC_STORE).put(remaining,storeKey);
+    else tx.objectStore(ACC_STORE).delete(storeKey);
+    tx.oncomplete=res;tx.onerror=()=>rej(tx.error);
+  });
+  return {restored,failed};
+}
+async function materializeBackupCipher(acc){
+  if(!acc?.salt||!acc?.ver||!acc?.data)throw new Error('备份缺少账号密文');
+  const cipher=await readAccCipher(acc.data);
+  if(!cipher)throw new Error('这是旧版备份，只保存了原设备的数据指针。请回原设备用新版重新导出，或从云端恢复');
+  return cipher;
+}
+
 function parseHbPayload(raw){
   if(!raw)return null;
   try{
@@ -882,11 +922,16 @@ async function deriveKey(pw,salt){
   const km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),{name:'PBKDF2'},false,['deriveKey']);
   return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:100000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
 }
+function bytesToBase64(bytes){
+  let binary='';const chunk=0x8000;
+  for(let i=0;i<bytes.length;i+=chunk)binary+=String.fromCharCode(...bytes.subarray(i,i+chunk));
+  return btoa(binary);
+}
 async function aesEnc(key,str){
   const iv=crypto.getRandomValues(new Uint8Array(12));
   const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(str));
   const out=new Uint8Array(12+ct.byteLength);out.set(iv);out.set(new Uint8Array(ct),12);
-  return btoa(String.fromCharCode(...out));
+  return bytesToBase64(out);
 }
 async function aesDec(key,b64){
   const d=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));
@@ -1056,11 +1101,19 @@ async function doLogin(accId,pw,remember,manageRemember){
     CKEY=key;curAccId=accId;
     if(acc.data){const encData=await readAccCipher(acc.data);const plain=await aesDec(CKEY,encData);data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:null,...JSON.parse(plain)};}
     else data={entries:[],columns:[],settings:{theme:'dark',defaultFont:''},syncConfig:null};
+    let portableImageResult={restored:0,failed:0};
+    try{portableImageResult=await restorePendingBackupImages(accId,key);}
+    catch(e){console.error('portable image restore error:',e);portableImageResult.failed=1;}
     if(manageRemember){
       if(remember)await rememberPw(accId,pw);
       else forgetPw(accId);
     }
     enterApp();
+    if(portableImageResult.restored||portableImageResult.failed){
+      setTimeout(()=>showToast(portableImageResult.failed
+        ?'⚠️ 已恢复 '+portableImageResult.restored+' 张图片，'+portableImageResult.failed+' 张待重试'
+        :'✅ 已从备份恢复 '+portableImageResult.restored+' 张图片'),80);
+    }
     return true;
   }catch{CKEY=null;curAccId=null;return false;}
 }
@@ -1889,24 +1942,45 @@ async function syncToGist(){
   }
 }
 
-function doExport(){
+async function doExport(){
   const acc=storeGetAcc(curAccId);if(!acc)return;
-  const blob=new Blob([JSON.stringify({v:3,acc})],{type:'application/json'});
-  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:`宏博备份_${new Date().toISOString().slice(0,10)}.json`});
-  a.click();URL.revokeObjectURL(a.href);
+  try{
+    showToast('正在生成完整加密备份…');
+    const encData=await materializeBackupCipher(acc);
+    const images={};let missing=0;
+    for(const src of allCloudImageRefs()){
+      const imageBlob=await getImageBlob(src);
+      if(!imageBlob){missing++;continue;}
+      images[src]=await aesEnc(CKEY,await blobToDataUrl(imageBlob));
+    }
+    const backup={
+      v:4,format:'hongbo-portable-backup',exportedAt:new Date().toISOString(),
+      acc:{...acc,data:encData},images
+    };
+    const blob=new Blob([JSON.stringify(backup)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=Object.assign(document.createElement('a'),{href:url,download:'宏博完整备份_'+new Date().toISOString().slice(0,10)+'.json'});
+    a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);
+    showToast(missing?'⚠️ 备份已导出，但有 '+missing+' 张本地图片缺失':'✅ 完整加密备份已导出');
+  }catch(e){alert('备份失败：'+(e.message||'未知错误'));}
 }
 function doImport(inp){
   const file=inp.files[0];if(!file)return;
   const r=new FileReader();
-  r.onload=ev=>{
+  r.onload=async ev=>{
     try{
       const obj=JSON.parse(ev.target.result);
       const acc=obj.acc||obj;
-      if(!acc.salt||!acc.ver)throw 0;
-      if(!confirm('导入备份将覆盖当前账号数据，确定吗？'))return;
-      storeUpdateAcc(curAccId,{data:acc.data});
-      alert('导入成功！请重新登录。');doSwitchAcc();
-    }catch{alert('文件格式不正确');}
+      const cipher=await materializeBackupCipher(acc);
+      if(!confirm('导入备份将覆盖当前账号数据；之后需使用该备份的原密码登录。确定吗？'))return;
+      const current=storeGetAcc(curAccId),prevRef=current?.data||'';
+      const packed=await saveAccCipherToDb(cipher);
+      await savePendingBackupImages(curAccId,obj.images);
+      const ok=storeUpdateAcc(curAccId,{salt:acc.salt,ver:acc.ver,data:packed,updated:Date.now()});
+      if(!ok)throw new Error('本地存储空间不足');
+      if(prevRef&&prevRef!==packed)deleteAccCipherRef(prevRef).catch(()=>{});
+      alert('完整备份已导入！请使用备份的原密码重新登录。');doSwitchAcc();
+    }catch(e){alert('导入失败：'+(e.message||'文件格式不正确'));}
   };r.readAsText(file);inp.value='';
 }
 
@@ -1948,22 +2022,25 @@ async function restoreFromToken(){
 function importFromLogin(inp){
   const file=inp.files[0];if(!file)return;
   const r=new FileReader();
-  r.onload=ev=>{
+  r.onload=async ev=>{
     try{
       const obj=JSON.parse(ev.target.result);
       const acc=obj.acc||obj;
-      if(!acc.salt||!acc.ver)throw 0;
+      const cipher=await materializeBackupCipher(acc);
       const name=prompt('为这个备份账号起个名字：',acc.name||'');
       if(!name?.trim())return;
       const hb=storeGet();
-      const id=acc.id||Date.now().toString(36);
-      hb.accounts=hb.accounts.filter(a=>a.id!==id);
-      hb.accounts.push({...acc,id,name:name.trim(),avatar:AVATARS[hb.accounts.length%AVATARS.length]});
-      storeSet(hb);
-      alert('导入成功！请用原密码登录。');showAccList();
-    }catch{alert('文件格式不正确');}
+      let id=acc.id||Date.now().toString(36);
+      while(hb.accounts.some(a=>a.id===id))id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+      const packed=await saveAccCipherToDb(cipher);
+      await savePendingBackupImages(id,obj.images);
+      hb.accounts.push({...acc,id,name:name.trim(),avatar:AVATARS[hb.accounts.length%AVATARS.length],data:packed});
+      if(!storeSet(hb))throw new Error('本地存储空间不足');
+      alert('完整备份已导入！请用原密码登录，图片将在登录后自动恢复。');showAccList();
+    }catch(e){alert('导入失败：'+(e.message||'文件格式不正确'));}
   };r.readAsText(file);inp.value='';
 }
+
 async function doClearAll(){
   if(!confirm('确定清空所有日记和专栏吗？'))return;
   if(!confirm('最后确认：所有日记将永久删除！'))return;
